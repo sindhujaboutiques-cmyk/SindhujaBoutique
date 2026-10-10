@@ -1,0 +1,25 @@
+{
+  "name": "sinduja-boutique-mern",
+  "version": "1.0.0",
+  "description": "Sinduja Boutique - Digital Showroom & Lead Generation Web Application",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "server": "node server/server.js",
+    "client": "npm --prefix client run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm --prefix client run build",
+    "install-all": "npm install && npm --prefix server install && npm --prefix client install"
+  },
+  "keywords": [
+    "sinduja-boutique",
+    "mern",
+    "fashion-boutique",
+    "digital-showroom"
+  ],
+  "author": "Sinduja Boutique",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

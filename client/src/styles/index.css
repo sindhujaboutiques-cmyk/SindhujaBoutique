@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-blush: #FFF5F6;
+    --color-pink: #E08E9D;
+    --color-rose: #C86D80;
+    --color-deep-rose: #9E3B53;
+    --color-berry: #7A223B;
+    --color-charcoal: #1A1819;
+  }
+
+  body {
+    @apply bg-white text-boutique-charcoal antialiased overflow-x-hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fdf7f8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e6b8c2;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c86d80;
+}
+
+/* Glassmorphism & Luxury Cards */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(224, 142, 157, 0.2);
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(224, 142, 157, 0.15);
+}
+
+/* Editorial Vignette & Gradients */
+.luxury-gradient-text {
+  background: linear-gradient(135deg, #1A1819 0%, #7A223B 50%, #C86D80 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.luxury-pink-gradient {
+  background: linear-gradient(135deg, #FFF5F6 0%, #FDF0F3 50%, #FBE5E9 100%);
+}
+
+.btn-primary-glow {
+  box-shadow: 0 4px 20px -2px rgba(200, 109, 128, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary-glow:hover {
+  box-shadow: 0 8px 25px -2px rgba(200, 109, 128, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Image zoom on hover */
+.img-zoom-container {
+  overflow: hidden;
+}
+
+.img-zoom-container img {
+  transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.img-zoom-container:hover img {
+  transform: scale(1.06);
+}
+
+/* Subtle Shimmer for sample label */
+@keyframes sampleShimmer {
+  0% { opacity: 0.85; }
+  50% { opacity: 1; }
+  100% { opacity: 0.85; }
+}
+
+.sample-badge {
+  animation: sampleShimmer 3s infinite ease-in-out;
+}
