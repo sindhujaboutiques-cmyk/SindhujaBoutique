@@ -63,7 +63,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`✨ Sinduja Boutique Server running at http://localhost:${PORT}`);
-});
+// Start Server (only when not run as a serverless handler)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`✨ Sinduja Boutique Server running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

@@ -3,11 +3,16 @@ const mongoose = require('mongoose');
 let isConnected = false;
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    isConnected = true;
+    return true;
+  }
+
   const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/sinduja_boutique';
   
   try {
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 3000 // Quick timeout so it fails gracefully to in-memory mode if Mongo is offline
+      serverSelectionTimeoutMS: 5000
     });
     isConnected = true;
     console.log(`[MongoDB] Connected successfully: ${conn.connection.host}`);
@@ -19,6 +24,7 @@ const connectDB = async () => {
   }
 };
 
-const getIsConnected = () => isConnected;
+const getIsConnected = () => isConnected || mongoose.connection.readyState === 1;
 
 module.exports = { connectDB, getIsConnected };
+
