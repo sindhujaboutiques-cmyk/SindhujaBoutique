@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Truck, CreditCard, CheckCircle2, 
   MessageCircle, ArrowLeft, Scissors, AlertCircle, 
-  Phone, Lock, ShoppingBag 
+  Phone, Lock, ShoppingBag, Trash2 
 } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import { useCart, formatINR } from '../context/CartContext';
