@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Sparkles, ArrowUpRight, Scissors } from 'lucide-react';
+import { MessageCircle, Sparkles, ArrowUpRight, Scissors, ShoppingBag, Check } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../../config/businessConfig';
+import { useCart } from '../../context/CartContext';
 import SampleNoticeBadge from '../common/SampleNoticeBadge';
 
 const ProductCard = ({ product }) => {
+  const { addToCart } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
+
   const {
     name,
     slug,
@@ -21,6 +25,14 @@ const ProductCard = ({ product }) => {
     : 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
 
   const whatsappUrl = BUSINESS_CONFIG.getWhatsAppUrl('product', name);
+
+  const handleQuickAdd = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1800);
+  };
 
   return (
     <div className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-boutique-blushMedium shadow-sm hover:shadow-luxury transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
@@ -58,13 +70,29 @@ const ProductCard = ({ product }) => {
         )}
 
         {/* Hover Quick Action Overlay */}
-        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:flex items-center justify-between gap-2">
-          <Link
-            to={`/products/${slug}`}
-            className="flex-1 py-2 px-3 rounded-xl bg-white/95 text-boutique-charcoal text-xs font-semibold text-center hover:bg-white transition-colors"
+        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 ${
+              justAdded
+                ? 'bg-emerald-600 text-white'
+                : 'bg-boutique-berry hover:bg-boutique-plum text-white'
+            }`}
+            title="Add to Shopping Bag"
           >
-            View Details
-          </Link>
+            {justAdded ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span>Added!</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>+ Add to Bag</span>
+              </>
+            )}
+          </button>
           <a
             href={whatsappUrl}
             target="_blank"
@@ -90,23 +118,56 @@ const ProductCard = ({ product }) => {
           </Link>
         </div>
 
-        <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-boutique-blushMedium flex flex-col min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between gap-1.5 sm:gap-2">
-          <div>
-            <span className="text-[9px] sm:text-xs text-gray-500 font-light block leading-none">Pricing:</span>
-            <span className="text-xs sm:text-sm font-semibold text-boutique-charcoal tracking-tight">
-              {price}
-            </span>
+        <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-boutique-blushMedium flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[9px] sm:text-xs text-gray-500 font-light block leading-none">Price:</span>
+              <span className="text-xs sm:text-sm font-semibold text-boutique-charcoal tracking-tight">
+                {price}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleQuickAdd}
+              className={`inline-flex items-center justify-center px-2.5 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all shadow-sm active:scale-95 ${
+                justAdded
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-boutique-berry hover:bg-boutique-plum text-white'
+              }`}
+              title="Add to Shopping Bag"
+            >
+              {justAdded ? (
+                <>
+                  <Check className="w-3 h-3 mr-1" />
+                  <span>Added</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="w-3 h-3 mr-1" />
+                  <span>Add</span>
+                </>
+              )}
+            </button>
           </div>
 
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center min-h-[32px] px-2.5 sm:px-3 rounded-full bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-800 border border-emerald-300/80 transition-all shadow-sm"
-          >
-            <MessageCircle className="w-3 h-3 mr-1 text-emerald-600 flex-shrink-0" />
-            <span>Enquire</span>
-          </a>
+          <div className="flex items-center gap-1.5 pt-1 border-t border-boutique-blush">
+            <Link
+              to={`/products/${slug}`}
+              className="flex-1 text-center py-1.5 px-2 rounded-lg bg-gray-50 hover:bg-boutique-blush text-[10px] sm:text-xs font-semibold text-gray-700 border border-gray-200 transition-colors"
+            >
+              Details
+            </Link>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center py-1.5 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[10px] sm:text-xs font-bold text-emerald-800 border border-emerald-300 transition-colors"
+            >
+              <MessageCircle className="w-3 h-3 mr-1 text-emerald-600 flex-shrink-0" />
+              <span>Enquire</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

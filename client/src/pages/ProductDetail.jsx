@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MessageCircle, Phone, ArrowLeft, Scissors, Check, Sparkles, ShieldCheck, Share2, Heart } from 'lucide-react';
+import { MessageCircle, Phone, ArrowLeft, Scissors, Check, Sparkles, ShieldCheck, Share2, Heart, ShoppingBag, Zap, Plus, Minus } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import ProductGallery from '../components/products/ProductGallery';
 import ProductCard from '../components/products/ProductCard';
 import SampleNoticeBadge from '../components/common/SampleNoticeBadge';
 import { getProductBySlug, getProducts } from '../services/api';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
+import { useCart } from '../context/CartContext';
 
 const ProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { addToCart, cartCount, openCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [customNotes, setCustomNotes] = useState('');
+  const [addedAnim, setAddedAnim] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -82,11 +87,34 @@ const ProductDetail = () => {
     );
   }
 
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart(product, {
+      size: selectedSize,
+      color: selectedColor,
+      quantity,
+      customNotes
+    });
+    setAddedAnim(true);
+    setTimeout(() => setAddedAnim(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    addToCart(product, {
+      size: selectedSize,
+      color: selectedColor,
+      quantity,
+      customNotes
+    });
+    navigate('/checkout');
+  };
+
   const customEnquiryParam = `${product.name}${selectedSize ? ` (Size: ${selectedSize})` : ''}${selectedColor ? ` (Color: ${selectedColor})` : ''}`;
   const whatsappUrl = BUSINESS_CONFIG.getWhatsAppUrl('product', customEnquiryParam);
 
   return (
-    <div className="bg-white py-8 sm:py-12">
+    <div className="bg-white py-8 sm:py-12 pb-24 md:pb-12">
       <SEO 
         title={product.name} 
         description={`${product.description.slice(0, 150)}... Enquire now at Sinduja Boutique.`} 
@@ -231,6 +259,48 @@ const ProductDetail = () => {
               </div>
             )}
 
+            {/* Quantity Selector */}
+            <div className="flex items-center gap-4 py-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                Quantity:
+              </span>
+              <div className="flex items-center border border-boutique-blushMedium rounded-xl overflow-hidden bg-white shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:bg-boutique-blush active:scale-95 transition-all"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="w-10 text-center font-bold text-sm text-boutique-charcoal">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:bg-boutique-blush active:scale-95 transition-all"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Stitching Notes Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
+                Custom Stitching / Measurement Instructions (Optional):
+              </label>
+              <textarea
+                value={customNotes}
+                onChange={(e) => setCustomNotes(e.target.value)}
+                placeholder="E.g., Bust: 36, Waist: 30, Sleeve length: 14 inches, boat neckline..."
+                rows="2"
+                className="w-full text-xs rounded-xl border border-boutique-blushMedium p-3 focus:outline-none focus:border-boutique-rose/60 focus:ring-1 focus:ring-boutique-rose/60 placeholder:text-gray-400 font-light"
+              />
+            </div>
+
             {/* Customization Guarantee Note */}
             <div className="p-4 rounded-2xl bg-boutique-blush/40 border border-dashed border-boutique-rose/40 flex items-start space-x-3">
               <Scissors className="w-5 h-5 text-boutique-deepRose mt-0.5 flex-shrink-0" />
@@ -240,25 +310,51 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons (Desktop & Tablet) */}
             <div className="pt-2 space-y-3">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center py-4 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-lg transform hover:-translate-y-0.5"
-              >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                <span>Enquire on WhatsApp</span>
-              </a>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className={`w-full flex items-center justify-center py-4 px-6 rounded-full text-xs uppercase font-bold tracking-widest transition-all shadow-md active:scale-95 ${
+                    addedAnim
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-deepRose border border-boutique-rose/40'
+                  }`}
+                >
+                  {addedAnim ? <Check className="w-4 h-4 mr-2" /> : <ShoppingBag className="w-4 h-4 mr-2" />}
+                  <span>{addedAnim ? 'Added to Bag!' : 'Add to Bag'}</span>
+                </button>
 
-              <a
-                href={BUSINESS_CONFIG.getCallUrl()}
-                className="w-full flex items-center justify-center py-3.5 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-boutique-charcoal bg-white border border-boutique-rose/50 hover:bg-boutique-blush transition-all"
-              >
-                <Phone className="w-4 h-4 mr-2 text-boutique-rose" />
-                <span>Call Boutique ({BUSINESS_CONFIG.phoneDisplay})</span>
-              </a>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  className="w-full flex items-center justify-center py-4 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-white bg-boutique-berry hover:bg-boutique-plum transition-all shadow-lg active:scale-95 transform hover:-translate-y-0.5"
+                >
+                  <Zap className="w-4 h-4 mr-2 fill-white" />
+                  <span>Buy Now</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center py-3.5 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-md active:scale-95"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  <span>Enquire on WhatsApp</span>
+                </a>
+
+                <a
+                  href={BUSINESS_CONFIG.getCallUrl()}
+                  className="w-full flex items-center justify-center py-3.5 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-boutique-charcoal bg-white border border-boutique-rose/50 hover:bg-boutique-blush transition-all"
+                >
+                  <Phone className="w-4 h-4 mr-2 text-boutique-rose" />
+                  <span>Call Boutique</span>
+                </a>
+              </div>
             </div>
 
             {/* Tags */}
@@ -275,6 +371,45 @@ const ProductDetail = () => {
 
           </div>
 
+        </div>
+
+        {/* Flipkart / Amazon Style Mobile Bottom Sticky Bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-boutique-blushMedium px-3 py-2 md:hidden shadow-[0_-6px_25px_rgba(0,0,0,0.12)]">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openCart}
+              className="relative flex flex-col items-center justify-center min-w-[46px] h-12 rounded-xl bg-gray-50 border border-gray-200 text-boutique-charcoal active:scale-95"
+              title="View Bag"
+            >
+              <ShoppingBag className="w-5 h-5 text-boutique-berry" />
+              <span className="text-[9px] font-semibold">Bag</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] rounded-full bg-boutique-berry text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className={`flex-1 h-12 rounded-xl text-xs font-bold uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 transition-all shadow-sm ${
+                addedAnim
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-boutique-blush text-boutique-deepRose border border-boutique-rose/40'
+              }`}
+            >
+              {addedAnim ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+              <span>{addedAnim ? 'Added' : 'Add to Bag'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              className="flex-1 h-12 rounded-xl bg-boutique-berry hover:bg-boutique-plum text-white text-xs font-bold uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 shadow-md shadow-boutique-berry/25"
+            >
+              <Zap className="w-4 h-4 fill-white" />
+              <span>Buy Now</span>
+            </button>
+          </div>
         </div>
 
         {/* Related Products Section */}

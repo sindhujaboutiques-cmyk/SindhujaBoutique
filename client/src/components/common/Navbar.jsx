@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Phone, Clock, Menu, X, ChevronRight, Search } from 'lucide-react';
+import { Phone, Clock, Menu, X, ChevronRight, Search, ShoppingBag } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 import logoImg from '../../assets/logo.png';
 import waLogo from '../../assets/whatsapp-logo.png';
 import igLogo from '../../assets/insta-logo.png';
@@ -12,6 +13,7 @@ const Navbar = () => {
   const [mobileSearch, setMobileSearch] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
+  const { cartCount, openCart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -128,6 +130,21 @@ const Navbar = () => {
 
           {/* Right Action CTA (Desktop) */}
           <div className="hidden lg:flex items-center space-x-3">
+            {/* Shopping Bag Button */}
+            <button
+              onClick={openCart}
+              className="relative p-2.5 rounded-full bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-charcoal hover:text-boutique-berry transition-all group"
+              aria-label="Open Shopping Bag"
+              title="Shopping Bag"
+            >
+              <ShoppingBag className="w-5 h-5 transition-transform group-hover:scale-110" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full bg-boutique-berry text-white text-[11px] font-bold flex items-center justify-center px-1 shadow-md animate-scale-in">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
             <a
               href={BUSINESS_CONFIG.getWhatsAppUrl('general')}
               target="_blank"
@@ -139,8 +156,22 @@ const Navbar = () => {
             </a>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex items-center space-x-2 lg:hidden">
+          {/* Mobile Right Controls */}
+          <div className="flex items-center space-x-1.5 lg:hidden">
+            {/* Mobile Shopping Bag Button */}
+            <button
+              onClick={openCart}
+              className="relative p-2 rounded-full bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-charcoal active:scale-90 transition-transform"
+              aria-label="Shopping Bag"
+            >
+              <ShoppingBag className="w-5 h-5 text-boutique-charcoal" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-boutique-berry text-white text-[10px] font-bold flex items-center justify-center px-1 shadow-md">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
             <a
               href={BUSINESS_CONFIG.getWhatsAppUrl('general')}
               target="_blank"
@@ -150,6 +181,7 @@ const Navbar = () => {
             >
               <img src={waLogo} alt="WhatsApp" className="w-5 h-5" />
             </a>
+
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-md text-boutique-charcoal hover:text-boutique-berry hover:bg-boutique-blush focus:outline-none transition-colors"

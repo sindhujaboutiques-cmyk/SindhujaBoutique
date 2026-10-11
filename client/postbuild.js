@@ -24,7 +24,10 @@ if (fs.existsSync(indexHtml)) {
     'gallery',
     'new-arrivals',
     'offers',
-    'contact'
+    'contact',
+    'cart',
+    'checkout',
+    'order-success'
   ];
 
   routes.forEach((route) => {
