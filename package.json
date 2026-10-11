@@ -8,8 +8,7 @@
     "server": "node server/server.js",
     "client": "npm --prefix client run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "npm --prefix client install && npm --prefix client run build",
-    "postinstall": "npm --prefix client install",
+    "build": "npm --prefix client run build",
     "install-all": "npm install && npm --prefix server install && npm --prefix client install"
   },
   "keywords": [
@@ -22,12 +21,5 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^9.1.2"
-  },
-  "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^18.0.7",
-    "express": "^5.3.0",
-    "mongoose": "^9.11.1",
-    "razorpay": "^2.9.8"
   }
 }
