@@ -12,7 +12,7 @@ import { deductProductStock } from '../services/api';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
 
 const Checkout = () => {
-  const { cart, cartCount, cartSubtotal, shippingFee, cartTotal, clearCart } = useCart();
+  const { cart, cartCount, cartSubtotal, shippingFee, cartTotal, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
 
   // Redirect if cart is empty
@@ -468,23 +468,34 @@ const Checkout = () => {
             {/* Compact Item Scroller */}
             <div className="max-h-60 overflow-y-auto divide-y divide-boutique-blushMedium scrollbar-none pr-1">
               {cart.map((item) => (
-                <div key={item.cartId} className="py-2.5 flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-3">
+                <div key={item.cartId} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-12 h-14 object-cover rounded-lg border border-boutique-blushMedium flex-shrink-0"
+                      className="w-12 h-12 object-cover rounded-lg border border-boutique-blushMedium flex-shrink-0 aspect-square shadow-sm"
                     />
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-boutique-charcoal line-clamp-1">{item.name}</p>
                       <p className="text-gray-500 text-[11px]">
                         Qty: {item.quantity} {item.size ? `• ${item.size}` : ''}
                       </p>
                     </div>
                   </div>
-                  <span className="font-serif font-bold text-boutique-charcoal whitespace-nowrap ml-2">
-                    {formatINR(item.numericPrice * item.quantity)}
-                  </span>
+                  <div className="flex items-center space-x-2 flex-shrink-0">
+                    <span className="font-serif font-bold text-boutique-charcoal whitespace-nowrap">
+                      {formatINR(item.numericPrice * item.quantity)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeFromCart(item.cartId)}
+                      className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+                      title="Remove item from bag"
+                      aria-label={`Remove ${item.name}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

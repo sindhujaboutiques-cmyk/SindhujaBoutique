@@ -121,18 +121,18 @@ const CartDrawer = () => {
             ) : (
               cart.map((item) => (
                 <div key={item.cartId} className="py-4 flex gap-3.5 items-start">
-                  {/* Item Image */}
-                  <div className="w-18 h-22 rounded-xl overflow-hidden bg-boutique-blush flex-shrink-0 border border-boutique-blushMedium">
+                  {/* Compact Item Thumbnail */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-boutique-blush flex-shrink-0 border border-boutique-blushMedium aspect-square shadow-sm">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover aspect-square"
                     />
                   </div>
 
                   {/* Item Details */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start gap-2">
+                    <div className="flex justify-between items-start gap-1">
                       <Link
                         to={`/products/${item.slug}`}
                         onClick={closeCart}
@@ -141,11 +141,14 @@ const CartDrawer = () => {
                         {item.name}
                       </Link>
                       <button
+                        type="button"
                         onClick={() => removeFromCart(item.cartId)}
-                        className="text-gray-400 hover:text-rose-600 transition-colors p-1"
+                        className="inline-flex items-center text-[10px] font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 px-2 py-0.5 rounded-md transition-all flex-shrink-0"
                         title="Remove item"
+                        aria-label={`Remove ${item.name} from cart`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3 h-3 mr-0.5" />
+                        <span>Remove</span>
                       </button>
                     </div>
 
@@ -154,7 +157,7 @@ const CartDrawer = () => {
                     </span>
 
                     {/* Options Pills */}
-                    <div className="flex flex-wrap items-center gap-1.5 my-1.5 text-[10px] text-gray-600">
+                    <div className="flex flex-wrap items-center gap-1.5 my-1 text-[10px] text-gray-600">
                       {item.size && (
                         <span className="px-2 py-0.5 rounded-md bg-gray-100 font-medium">
                           Size: {item.size}
@@ -169,21 +172,29 @@ const CartDrawer = () => {
 
                     {/* Price & Quantity Stepper */}
                     <div className="flex items-center justify-between mt-2 pt-1">
-                      <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white">
+                      <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.cartId, item.quantity - 1)}
                           className="px-2 py-1 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
-                          aria-label="Decrease quantity"
+                          aria-label={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
+                          title={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
                         >
-                          <Minus className="w-3 h-3" />
+                          {item.quantity === 1 ? (
+                            <Trash2 className="w-3 h-3 text-rose-500" />
+                          ) : (
+                            <Minus className="w-3 h-3" />
+                          )}
                         </button>
                         <span className="px-2.5 text-xs font-bold text-boutique-charcoal min-w-[20px] text-center">
                           {item.quantity}
                         </span>
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
                           className="px-2 py-1 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
                           aria-label="Increase quantity"
+                          title="Increase quantity"
                         >
                           <Plus className="w-3 h-3" />
                         </button>

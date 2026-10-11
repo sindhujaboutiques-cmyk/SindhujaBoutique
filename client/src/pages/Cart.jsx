@@ -110,81 +110,109 @@ const Cart = () => {
               {/* Items Table/Cards */}
               <div className="divide-y divide-boutique-blushMedium border border-boutique-blushMedium rounded-2xl overflow-hidden bg-white shadow-sm">
                 {cart.map((item) => (
-                  <div key={item.cartId} className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className="w-20 h-26 rounded-xl overflow-hidden bg-boutique-blush border border-boutique-blushMedium flex-shrink-0">
+                  <div key={item.cartId} className="p-4 sm:p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:bg-boutique-blushLight/40 transition-colors">
+                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                      {/* Compact Thumbnail (strictly bounded square, no oversized full images) */}
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-boutique-blush border border-boutique-blushMedium flex-shrink-0 aspect-square shadow-sm">
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover aspect-square"
                         />
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0 flex-1">
                         <span className="text-[10px] uppercase font-bold tracking-wider text-boutique-rose block">
                           {item.category}
                         </span>
                         <Link
                           to={`/products/${item.slug}`}
-                          className="font-serif text-base sm:text-lg font-bold text-boutique-charcoal hover:text-boutique-berry transition-colors line-clamp-1"
+                          className="font-serif text-base font-bold text-boutique-charcoal hover:text-boutique-berry transition-colors line-clamp-1"
                         >
                           {item.name}
                         </Link>
 
-                        <div className="flex flex-wrap gap-2 text-xs text-gray-500 pt-1">
+                        <div className="flex flex-wrap gap-1.5 text-[11px] text-gray-500 pt-0.5">
                           {item.size && (
-                            <span className="px-2 py-0.5 rounded bg-gray-100 font-medium">
+                            <span className="px-2 py-0.5 rounded-md bg-gray-100 font-medium">
                               Size: {item.size}
                             </span>
                           )}
                           {item.color && (
-                            <span className="px-2 py-0.5 rounded bg-gray-100 font-medium">
-                              Color: {item.color}
+                            <span className="px-2 py-0.5 rounded-md bg-gray-100 font-medium">
+                              {item.color}
                             </span>
                           )}
+                          <span className="text-gray-400">•</span>
+                          <span className="font-medium text-boutique-charcoal">
+                            {formatINR(item.numericPrice)} / unit
+                          </span>
                         </div>
 
-                        <div className="pt-1">
-                          <span className="text-xs text-gray-500 block">Unit Price: {formatINR(item.numericPrice)}</span>
+                        {/* Mobile Quick Remove Link */}
+                        <div className="sm:hidden pt-1">
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.cartId)}
+                            className="inline-flex items-center text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors py-0.5"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-1" />
+                            <span>Remove</span>
+                          </button>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between w-full sm:w-auto sm:space-x-6 pt-3 sm:pt-0 border-t sm:border-0 border-gray-100">
+                    <div className="flex items-center justify-between w-full sm:w-auto sm:space-x-5 pt-2 sm:pt-0 border-t sm:border-0 border-gray-100">
                       {/* Quantity Stepper */}
                       <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.cartId, item.quantity - 1)}
                           className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                          title={item.quantity === 1 ? 'Remove from bag' : 'Decrease quantity'}
+                          aria-label="Decrease quantity"
                         >
-                          <Minus className="w-3.5 h-3.5" />
+                          {item.quantity === 1 ? (
+                            <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                          ) : (
+                            <Minus className="w-3.5 h-3.5" />
+                          )}
                         </button>
-                        <span className="px-3 text-xs font-bold text-boutique-charcoal min-w-[24px] text-center">
+                        <span className="px-3 text-xs font-bold text-boutique-charcoal min-w-[28px] text-center">
                           {item.quantity}
                         </span>
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
                           className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                          title="Increase quantity"
+                          aria-label="Increase quantity"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
                       {/* Subtotal */}
-                      <div className="text-right min-w-[90px]">
+                      <div className="text-right min-w-[85px]">
                         <span className="font-serif text-base sm:text-lg font-bold text-boutique-charcoal block">
                           {formatINR(item.numericPrice * item.quantity)}
                         </span>
                       </div>
 
-                      {/* Remove */}
-                      <button
-                        onClick={() => removeFromCart(item.cartId)}
-                        className="text-gray-400 hover:text-rose-600 transition-colors p-1"
-                        title="Remove item"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {/* Prominent Remove Button (Desktop & Tablet) */}
+                      <div className="hidden sm:block">
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.cartId)}
+                          className="inline-flex items-center text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+                          title="Remove item from bag"
+                          aria-label={`Remove ${item.name}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-1" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
