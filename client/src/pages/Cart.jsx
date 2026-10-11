@@ -86,25 +86,20 @@ const Cart = () => {
             {/* Left: Cart Items List */}
             <div className="lg:col-span-8 space-y-4">
               
-              {/* Free Shipping Alert */}
-              <div className="p-4 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium">
-                <div className="flex items-center justify-between text-xs mb-2 font-medium">
-                  <span className="flex items-center text-boutique-charcoal">
-                    <Truck className="w-4 h-4 mr-2 text-boutique-rose" />
-                    {amountNeededForFreeShipping === 0 ? (
-                      <span className="text-emerald-700 font-bold">🎉 Congratulations! You qualify for FREE Express Delivery!</span>
-                    ) : (
-                      <span>Add <strong className="text-boutique-berry font-bold">{formatINR(amountNeededForFreeShipping)}</strong> more to get <strong>FREE Express Delivery</strong></span>
-                    )}
-                  </span>
-                  <span className="font-bold text-gray-500">{freeShippingProgress}%</span>
+              {/* Free Shipping Guaranteed Banner */}
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-emerald-900">FREE Express Courier Delivery</p>
+                    <p className="text-[11px] text-emerald-700 font-light">Complimentary doorstep delivery on all orders across India</p>
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-boutique-rose to-boutique-berry rounded-full transition-all duration-500"
-                    style={{ width: `${freeShippingProgress}%` }}
-                  />
-                </div>
+                <span className="self-start sm:self-center text-xs font-bold text-emerald-800 bg-white px-3 py-1 rounded-full border border-emerald-200 shadow-sm whitespace-nowrap">
+                  ₹0 Free Delivery
+                </span>
               </div>
 
               {/* Items Table/Cards */}
@@ -243,9 +238,7 @@ const Cart = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Delivery Charges</span>
-                  <span className="font-semibold text-boutique-charcoal">
-                    {shippingFee === 0 ? <span className="text-emerald-700 font-bold">FREE Delivery</span> : formatINR(shippingFee)}
-                  </span>
+                  <span className="font-semibold text-emerald-700">FREE (₹0)</span>
                 </div>
                 <div className="flex justify-between text-base font-bold text-boutique-charcoal pt-3 border-t border-boutique-blushMedium">
                   <span>Grand Total</span>

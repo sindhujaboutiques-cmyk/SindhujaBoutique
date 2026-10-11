@@ -464,9 +464,7 @@ const Checkout = () => {
               </div>
               <div className="flex justify-between">
                 <span>Express Courier Shipping</span>
-                <span className="font-semibold text-boutique-charcoal">
-                  {shippingFee === 0 ? <span className="text-emerald-700 font-bold">FREE Delivery</span> : formatINR(shippingFee)}
-                </span>
+                <span className="font-semibold text-emerald-700">FREE (₹0)</span>
               </div>
               <div className="flex justify-between text-base font-bold text-boutique-charcoal pt-3 border-t border-boutique-blushMedium">
                 <span>Total Amount</span>

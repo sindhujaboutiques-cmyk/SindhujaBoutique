@@ -70,26 +70,16 @@ const CartDrawer = () => {
             </button>
           </div>
 
-          {/* Free Shipping Progress Indicator */}
+          {/* Free Shipping Guaranteed Badge */}
           {cart.length > 0 && (
-            <div className="bg-boutique-blush/60 px-5 py-2.5 border-b border-boutique-blushMedium">
-              <div className="flex items-center justify-between text-xs mb-1.5 font-medium">
-                <span className="flex items-center text-boutique-charcoal">
-                  <Truck className="w-3.5 h-3.5 mr-1.5 text-boutique-rose" />
-                  {amountNeededForFreeShipping === 0 ? (
-                    <span className="text-emerald-700 font-bold">🎉 You have unlocked FREE Express Delivery!</span>
-                  ) : (
-                    <span>Add <strong className="text-boutique-berry font-bold">{formatINR(amountNeededForFreeShipping)}</strong> more for <strong>FREE Delivery</strong></span>
-                  )}
-                </span>
-                <span className="text-[11px] font-bold text-gray-500">{freeShippingProgress}%</span>
-              </div>
-              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-boutique-rose to-boutique-berry transition-all duration-500 rounded-full"
-                  style={{ width: `${freeShippingProgress}%` }}
-                />
-              </div>
+            <div className="bg-emerald-50/80 px-5 py-2.5 border-b border-emerald-100 flex items-center justify-between text-xs">
+              <span className="flex items-center text-emerald-800 font-semibold">
+                <Truck className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                <span>FREE Express Delivery on All Orders</span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200">
+                ₹0 Shipping
+              </span>
             </div>
           )}
 
@@ -223,9 +213,7 @@ const CartDrawer = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Estimated Delivery</span>
-                  <span className="font-medium text-boutique-charcoal">
-                    {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : formatINR(shippingFee)}
-                  </span>
+                  <span className="font-semibold text-emerald-600">FREE (₹0)</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-boutique-charcoal pt-2 border-t border-gray-100">
                   <span>Estimated Total</span>

@@ -108,13 +108,13 @@ export const CartProvider = ({ children }) => {
   const closeCart = () => setIsCartOpen(false);
   const toggleCart = () => setIsCartOpen((prev) => !prev);
 
-  // Computed Values
+  // Computed Values (Free Shipping on all orders)
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartSubtotal = cart.reduce((acc, item) => acc + item.numericPrice * item.quantity, 0);
-  const FREE_SHIPPING_THRESHOLD = 1999;
-  const shippingFee = cartSubtotal >= FREE_SHIPPING_THRESHOLD || cartSubtotal === 0 ? 0 : 99;
-  const cartTotal = cartSubtotal + shippingFee;
-  const amountNeededForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - cartSubtotal);
+  const shippingFee = 0; // Free shipping across all orders
+  const cartTotal = cartSubtotal; // No shipping cost
+  const amountNeededForFreeShipping = 0;
+  const FREE_SHIPPING_THRESHOLD = 0;
 
   return (
     <CartContext.Provider
