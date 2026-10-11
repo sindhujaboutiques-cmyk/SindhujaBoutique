@@ -26,15 +26,15 @@ const MobileActionBar = () => {
       )}
 
       {/* Sticky Mobile Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-boutique-blushMedium px-3 py-2.5 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-boutique-blushMedium px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         <div className="grid grid-cols-3 gap-2">
           
           {/* Direct Call */}
           <a
             href={BUSINESS_CONFIG.getCallUrl()}
-            className="flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium active:scale-95 transition-all text-center"
+            className="flex flex-col items-center justify-center min-h-[44px] py-1.5 px-2 rounded-xl bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium active:scale-95 transition-all text-center"
           >
-            <Phone className="w-4 h-4 text-boutique-deepRose mb-1" />
+            <Phone className="w-4 h-4 text-boutique-deepRose mb-0.5" />
             <span className="text-[11px] font-semibold tracking-wide">Call Us</span>
           </a>
 
@@ -43,9 +43,9 @@ const MobileActionBar = () => {
             href={BUSINESS_CONFIG.getWhatsAppUrl('general')}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-boutique-berry text-white active:scale-95 transition-all text-center shadow-md shadow-boutique-rose/20"
+            className="flex flex-col items-center justify-center min-h-[44px] py-1.5 px-2 rounded-xl bg-boutique-berry text-white active:scale-95 transition-all text-center shadow-md shadow-boutique-rose/20"
           >
-            <MessageCircle className="w-4 h-4 text-emerald-300 mb-1" />
+            <MessageCircle className="w-4 h-4 text-emerald-300 mb-0.5" />
             <span className="text-[11px] font-bold tracking-wide">WhatsApp</span>
           </a>
 
@@ -55,13 +55,13 @@ const MobileActionBar = () => {
             target={BUSINESS_CONFIG.googleMapsUrl ? '_blank' : '_self'}
             rel="noopener noreferrer"
             onClick={handleDirectionsClick}
-            className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-center active:scale-95 transition-all ${
+            className={`flex flex-col items-center justify-center min-h-[44px] py-1.5 px-2 rounded-xl text-center active:scale-95 transition-all ${
               BUSINESS_CONFIG.googleMapsUrl 
                 ? 'bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium' 
                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
             }`}
           >
-            <Navigation className={`w-4 h-4 mb-1 ${BUSINESS_CONFIG.googleMapsUrl ? 'text-boutique-deepRose' : 'text-gray-400'}`} />
+            <Navigation className={`w-4 h-4 mb-0.5 ${BUSINESS_CONFIG.googleMapsUrl ? 'text-boutique-deepRose' : 'text-gray-400'}`} />
             <span className="text-[11px] font-medium tracking-wide">
               {BUSINESS_CONFIG.googleMapsUrl ? 'Directions' : 'Location'}
             </span>

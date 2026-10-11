@@ -28,7 +28,7 @@ const AboutPreview = () => {
               </div>
 
               {/* Founder quote pill */}
-              <div className="absolute -bottom-6 -right-4 sm:-right-6 bg-white p-5 rounded-2xl shadow-luxury border border-boutique-blushMedium max-w-xs">
+              <div className="relative sm:absolute mt-4 sm:mt-0 sm:-bottom-6 sm:-right-6 bg-white p-4 sm:p-5 rounded-2xl shadow-luxury border border-boutique-blushMedium max-w-xs mx-auto sm:mx-0">
                 <div className="flex items-center space-x-2 text-boutique-berry mb-1.5">
                   <Heart className="w-4 h-4 fill-boutique-pink text-boutique-deepRose" />
                   <span className="font-serif text-sm font-bold">Personalized Service</span>
@@ -49,7 +49,7 @@ const AboutPreview = () => {
               Welcome to Sinduja Boutique
             </span>
 
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-boutique-charcoal leading-tight">
+            <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-boutique-charcoal leading-tight">
               Where Elegant Fashion Meets <br />
               <span className="text-boutique-deepRose italic">Personalized Craftsmanship</span>
             </h2>

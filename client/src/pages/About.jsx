@@ -39,19 +39,19 @@ const About = () => {
           <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-white/80 border border-boutique-pink/30 mb-4 shadow-sm">
             Our Brand & Story
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-6">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-4 sm:mb-6">
             Welcome to <span className="text-boutique-deepRose italic">Sinduja Boutique</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-gray-600 text-base sm:text-lg font-light leading-relaxed">
+          <p className="max-w-2xl mx-auto text-gray-600 text-sm sm:text-lg font-light leading-relaxed">
             "Your Style. Your Rule." — Celebrating modern feminine elegance, rich South Indian heritage, and bespoke craftsmanship made just for you.
           </p>
         </div>
       </section>
 
       {/* Main Narrative Section */}
-      <section className="py-16 sm:py-24 bg-white">
+      <section className="py-12 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
             
             {/* Left Image Collage */}
             <div className="lg:col-span-6 relative">
@@ -81,7 +81,7 @@ const About = () => {
                 Personalized Fashion
               </span>
 
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-boutique-charcoal leading-tight">
+              <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-boutique-charcoal leading-tight">
                 Designed to Match <br />
                 <span className="text-boutique-deepRose italic">Your True Essence</span>
               </h2>
@@ -143,38 +143,41 @@ const About = () => {
             subtitle="What you can always expect when you consult with Sinduja Boutique."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-3xl bg-white border border-boutique-blushMedium shadow-sm text-center">
-              <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-boutique-blushMedium flex items-center justify-center text-boutique-berry">
-                <Scissors className="w-7 h-7" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+            <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border border-boutique-blushMedium shadow-sm text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 sm:mb-5 rounded-2xl bg-boutique-blushMedium flex items-center justify-center text-boutique-berry">
+                <Scissors className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
-              <h3 className="font-serif text-2xl font-bold text-boutique-charcoal mb-3">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-boutique-charcoal mb-2 sm:mb-3">
                 Precision Fitting
               </h3>
-              <p className="text-gray-600 text-sm font-light leading-relaxed">
+              <p className="text-gray-600 text-xs sm:text-sm font-light leading-relaxed">
                 We take detailed measurements and offer trial adjustments so your blouses and outfits fit comfortably and gracefully.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-white border border-boutique-blushMedium shadow-sm text-center">
-              <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-boutique-blushMedium flex items-center justify-center text-boutique-berry">
-                <Sparkles className="w-7 h-7" />
+            <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border border-boutique-blushMedium shadow-sm text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 sm:mb-5 rounded-2xl bg-boutique-blushMedium flex items-center justify-center text-boutique-berry">
+                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
-              <h3 className="font-serif text-2xl font-bold text-boutique-charcoal mb-3">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-boutique-charcoal mb-2 sm:mb-3">
                 Curated Aesthetics
               </h3>
-              <p className="text-gray-600 text-sm font-light leading-relaxed">
+              <p className="text-gray-600 text-xs sm:text-sm font-light leading-relaxed">
                 Handpicked sarees, fabrics, and embroideries that balance authentic tradition with fresh contemporary flair.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-white border border-boutique-blushMedium shadow-sm text-center">
-              <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-boutique-blushMedium flex items-center justify-center text-boutique-berry">
-                <Heart className="w-7 h-7" />
+            <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border border-boutique-blushMedium shadow-sm text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 sm:mb-5 rounded-2xl bg-boutique-blushMedium flex items-center justify-center text-boutique-berry">
+                <Heart className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
-              <h3 className="font-serif text-2xl font-bold text-boutique-charcoal mb-3">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-boutique-charcoal mb-2 sm:mb-3">
                 Friendly Assistance
               </h3>
+              <p className="text-gray-600 text-xs sm:text-sm font-light leading-relaxed">
+                Dedicated personal consultations with Sinduja to assist in matching fabrics, designs, and accessories.
+              </p>
             </div>
           </div>
         </div>

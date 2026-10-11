@@ -44,7 +44,7 @@ const Services = () => {
           <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-boutique-blushMedium/70 mb-3 border border-boutique-pink/30">
             Atelier Craftsmanship
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-4">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-3 sm:mb-4">
             Bespoke Tailoring & Services
           </h1>
           <p className="text-gray-600 text-sm sm:text-base font-light leading-relaxed">
@@ -53,24 +53,24 @@ const Services = () => {
         </div>
 
         {/* Services List */}
-        <div className="space-y-8 mb-20">
+        <div className="space-y-6 sm:space-y-8 mb-16 sm:mb-20">
           {INITIAL_SERVICES.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
         </div>
 
         {/* How It Works Process */}
-        <div className="p-8 sm:p-14 rounded-3xl bg-boutique-blush/40 border border-boutique-blushMedium">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+        <div className="p-5 sm:p-10 md:p-14 rounded-2xl sm:rounded-3xl bg-boutique-blush/40 border border-boutique-blushMedium">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
             <span className="text-[11px] font-bold uppercase tracking-widest text-boutique-rose block mb-2">
               Our Process
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-boutique-charcoal">
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-boutique-charcoal">
               How Custom Stitching Works
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {steps.map((st) => (
               <div key={st.num} className="p-6 rounded-2xl bg-white border border-boutique-blushMedium/80 shadow-sm relative">
                 <span className="font-serif text-3xl font-bold text-boutique-rose/30 block mb-2">

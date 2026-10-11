@@ -8,7 +8,7 @@ import { BUSINESS_CONFIG } from '../../config/businessConfig';
 
 const Footer = () => {
   return (
-    <footer className="bg-boutique-charcoal text-white pt-10 pb-16 md:pb-8 border-t border-boutique-charcoalLight/60">
+    <footer className="bg-boutique-charcoal text-white pt-10 pb-28 md:pb-10 border-t border-boutique-charcoalLight/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           
@@ -146,13 +146,10 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-boutique-charcoalLight/50 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-4">
+        <div className="mt-12 pt-8 border-t border-boutique-charcoalLight/50 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-3 text-center sm:text-left">
           <p>© {BUSINESS_CONFIG.year} {BUSINESS_CONFIG.name}. All Rights Reserved.</p>
-          <div className="flex items-center space-x-6">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end">
             <span>Designed for {BUSINESS_CONFIG.owner}'s Fashion Atelier</span>
-            <Link to="/admin" className="text-gray-500 hover:text-boutique-pink transition-colors">
-              Owner Portal
-            </Link>
           </div>
         </div>
       </div>

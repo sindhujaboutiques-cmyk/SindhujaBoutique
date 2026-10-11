@@ -95,20 +95,20 @@ const ProductDetail = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb navigation */}
-        <div className="flex items-center justify-between mb-8 text-xs text-gray-500">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <Link to="/" className="hover:text-boutique-berry transition-colors">Home</Link>
             <span>/</span>
             <Link to="/collections" className="hover:text-boutique-berry transition-colors">Collections</Link>
             <span>/</span>
             <Link to={`/products?category=${product.categorySlug}`} className="hover:text-boutique-berry transition-colors">{product.category}</Link>
             <span>/</span>
-            <span className="text-boutique-charcoal font-medium truncate max-w-[200px] sm:max-w-none">{product.name}</span>
+            <span className="text-boutique-charcoal font-medium truncate max-w-[180px] sm:max-w-none">{product.name}</span>
           </div>
 
           <button
             onClick={handleShare}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-charcoal transition-colors"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-charcoal transition-colors self-start sm:self-auto"
             title="Share this product"
           >
             <Share2 className="w-3.5 h-3.5 text-boutique-rose" />
@@ -117,7 +117,7 @@ const ProductDetail = () => {
         </div>
 
         {/* Main Product Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* Left: Product Gallery */}
           <div className="lg:col-span-6">
@@ -150,12 +150,12 @@ const ProductDetail = () => {
             </div>
 
             {/* Title */}
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-boutique-charcoal leading-snug">
+            <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-boutique-charcoal leading-snug">
               {product.name}
             </h1>
 
             {/* Price Box */}
-            <div className="p-4 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span className="text-xs text-gray-500 font-light block">Boutique Price:</span>
                 <span className="font-serif text-2xl font-bold text-boutique-charcoal tracking-wide">
@@ -283,7 +283,7 @@ const ProductDetail = () => {
             <h3 className="font-serif text-2xl sm:text-3xl font-bold text-boutique-charcoal mb-8">
               More in {product.category}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
               {relatedProducts.map((rel) => (
                 <ProductCard key={rel.id || rel._id} product={rel} />
               ))}

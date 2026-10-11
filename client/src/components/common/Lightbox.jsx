@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../../config/businessConfig';
 
@@ -12,6 +12,9 @@ const Lightbox = ({
   title = '',
   category = ''
 }) => {
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -37,27 +40,47 @@ const Lightbox = ({
     ? { image: images[currentIndex], title: title, category: category } 
     : images[currentIndex];
 
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    if (distance > 50 && onNext) onNext();
+    if (distance < -50 && onPrev) onPrev();
+  };
+
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-fade-in"
+      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-8 animate-fade-in"
       onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Top Controls */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center space-x-3 z-50">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center space-x-2.5 sm:space-x-3 z-50">
         <a
           href={BUSINESS_CONFIG.getWhatsAppUrl('product', currentItem.title || 'this design')}
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white tracking-wider uppercase transition-colors"
+          className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white tracking-wider uppercase transition-colors shadow-md"
           onClick={(e) => e.stopPropagation()}
         >
-          <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
-          Enquire this design
+          <MessageCircle className="w-3.5 h-3.5 sm:mr-1.5" />
+          <span className="hidden sm:inline">Enquire this design</span>
+          <span className="sm:hidden ml-1 font-bold">Enquire</span>
         </a>
 
         <button
           onClick={onClose}
-          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors focus:outline-none"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors focus:outline-none"
           aria-label="Close Lightbox"
         >
           <X className="w-5 h-5" />
@@ -69,18 +92,18 @@ const Lightbox = ({
         <>
           <button
             onClick={(e) => { e.stopPropagation(); onPrev(); }}
-            className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center transition-all focus:outline-none z-50"
+            className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center transition-all focus:outline-none z-50"
             aria-label="Previous image"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
           <button
             onClick={(e) => { e.stopPropagation(); onNext(); }}
-            className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center transition-all focus:outline-none z-50"
+            className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center transition-all focus:outline-none z-50"
             aria-label="Next image"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </>
       )}

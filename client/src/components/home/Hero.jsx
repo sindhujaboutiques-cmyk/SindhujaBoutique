@@ -19,16 +19,16 @@ const Hero = () => {
           <div className="lg:col-span-7 space-y-6 sm:space-y-8 text-center lg:text-left">
             {/* Main Brand Title & Tagline */}
             <div className="space-y-2">
-              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-bold tracking-tight text-boutique-charcoal leading-[1.08]">
+              <h1 className="font-serif text-3xl min-[400px]:text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-bold tracking-tight text-boutique-charcoal leading-[1.08]">
                 SINDUJA <span className="text-boutique-rose italic font-normal">BOUTIQUE</span>
               </h1>
-              <p className="font-serif text-2xl sm:text-3xl md:text-4xl text-boutique-deepRose tracking-wide italic font-medium">
+              <p className="font-serif text-xl sm:text-2xl md:text-3xl lg:text-4xl text-boutique-deepRose tracking-wide italic font-medium">
                 "{BUSINESS_CONFIG.tagline}"
               </p>
             </div>
 
             {/* Supporting Description */}
-            <p className="max-w-xl mx-auto lg:mx-0 text-gray-600 text-base sm:text-lg font-light leading-relaxed">
+            <p className="max-w-xl mx-auto lg:mx-0 text-gray-600 text-sm sm:text-lg font-light leading-relaxed">
               Discover elegant fashion, handcrafted soft silks, kanchi cotton sarees, designer jewellery, cosmetics, and made-to-measure tailoring crafted to celebrate your distinctive grace.
             </p>
 
@@ -62,18 +62,18 @@ const Hero = () => {
             </div>
 
             {/* Trust Highlights */}
-            <div className="pt-6 border-t border-boutique-blushMedium grid grid-cols-3 gap-4 text-center max-w-lg mx-auto lg:mx-0">
+            <div className="pt-6 border-t border-boutique-blushMedium grid grid-cols-3 gap-2 sm:gap-4 text-center max-w-lg mx-auto lg:mx-0">
               <div className="space-y-1">
-                <span className="font-serif text-lg font-bold text-boutique-charcoal block">Bespoke</span>
-                <span className="text-[11px] text-gray-500 uppercase tracking-wider block font-medium">Custom Stitching</span>
+                <span className="font-serif text-base sm:text-lg font-bold text-boutique-charcoal block">Bespoke</span>
+                <span className="text-[10px] sm:text-[11px] text-gray-500 uppercase tracking-wider block font-medium leading-tight">Custom Stitching</span>
               </div>
-              <div className="space-y-1 border-x border-boutique-blushMedium">
-                <span className="font-serif text-lg font-bold text-boutique-charcoal block">Bridal</span>
-                <span className="text-[11px] text-gray-500 uppercase tracking-wider block font-medium">Specialist Cuts</span>
+              <div className="space-y-1 border-x border-boutique-blushMedium px-1">
+                <span className="font-serif text-base sm:text-lg font-bold text-boutique-charcoal block">Bridal</span>
+                <span className="text-[10px] sm:text-[11px] text-gray-500 uppercase tracking-wider block font-medium leading-tight">Specialist Cuts</span>
               </div>
               <div className="space-y-1">
-                <span className="font-serif text-lg font-bold text-boutique-charcoal block">Personalized</span>
-                <span className="text-[11px] text-gray-500 uppercase tracking-wider block font-medium">Styling Care</span>
+                <span className="font-serif text-base sm:text-lg font-bold text-boutique-charcoal block">Personalized</span>
+                <span className="text-[10px] sm:text-[11px] text-gray-500 uppercase tracking-wider block font-medium leading-tight">Styling Care</span>
               </div>
             </div>
 
@@ -87,7 +87,7 @@ const Hero = () => {
               <div className="absolute -inset-2 bg-gradient-to-tr from-boutique-rose/25 via-boutique-pink/20 to-boutique-berry/20 rounded-[2.2rem] blur-sm -rotate-1 pointer-events-none"></div>
 
               {/* Main Editorial Image Card */}
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-boutique-blush aspect-[2/3] max-h-[580px] w-full mx-auto">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-boutique-blush aspect-[3/4] sm:aspect-[2/3] max-h-[460px] sm:max-h-[580px] w-full mx-auto">
                 <img
                   src={heroSectionImg}
                   alt="Sinduja Boutique Signature Festive Saree Collection"

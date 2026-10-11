@@ -62,7 +62,7 @@ const ServiceCard = ({ service }) => {
         </div>
 
         {/* Action Button */}
-        <div className="pt-4 border-t border-boutique-blushMedium flex items-center justify-between">
+        <div className="pt-4 border-t border-boutique-blushMedium flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <span className="text-xs text-gray-500 font-light">
             Consultation & Measurement Available
           </span>
@@ -71,7 +71,7 @@ const ServiceCard = ({ service }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-boutique-berry hover:bg-boutique-deepRose transition-colors shadow-sm"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-boutique-berry hover:bg-boutique-deepRose transition-colors shadow-sm w-full sm:w-auto"
           >
             <MessageCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-300" />
             Book / Enquire

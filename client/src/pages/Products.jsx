@@ -82,14 +82,14 @@ const Products = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-boutique-blushMedium/70 mb-3 border border-boutique-pink/30">
             Showroom Catalogue
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-boutique-charcoal mb-3">
+          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-boutique-charcoal mb-3">
             Explore All Creations
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base font-light">
+          <p className="text-gray-600 text-xs sm:text-base font-light">
             Every product is custom-tailorable to your exact measurements, fabric choices, and design aesthetics.
           </p>
         </div>

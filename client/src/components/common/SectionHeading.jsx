@@ -14,19 +14,19 @@ const SectionHeading = ({
   };
 
   return (
-    <div className={`max-w-3xl mb-12 sm:mb-16 ${alignClasses[alignment]} ${className}`}>
+    <div className={`max-w-3xl mb-8 sm:mb-16 ${alignClasses[alignment]} ${className}`}>
       {badge && (
-        <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-boutique-blushMedium/70 mb-3 border border-boutique-pink/30">
+        <span className="inline-block px-3.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-boutique-blushMedium/70 mb-2.5 sm:mb-3 border border-boutique-pink/30">
           {badge}
         </span>
       )}
       
-      <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-boutique-charcoal mb-4">
+      <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-boutique-charcoal mb-3 sm:mb-4">
         {title}
       </h2>
 
       {subtitle && (
-        <p className="text-gray-600 text-sm sm:text-base md:text-lg font-light leading-relaxed">
+        <p className="text-gray-600 text-xs sm:text-base md:text-lg font-light leading-relaxed">
           {subtitle}
         </p>
       )}

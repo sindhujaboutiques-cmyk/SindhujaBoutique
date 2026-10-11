@@ -65,11 +65,11 @@ const Contact = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Banner */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
           <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-boutique-blushMedium/70 mb-3 border border-boutique-pink/30">
             Get In Touch
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-4">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-3 sm:mb-4">
             Visit Sinduja Boutique
           </h1>
           <p className="text-gray-600 text-sm sm:text-base font-light leading-relaxed">
@@ -78,15 +78,15 @@ const Contact = () => {
         </div>
 
         {/* Contact Grid & Form */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* Left Column: Direct Contact Cards */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-4 sm:space-y-6">
             
             {/* WhatsApp Card */}
-            <div className="p-6 rounded-3xl bg-emerald-50/60 border border-emerald-100 flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-6 h-6" />
+            <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-emerald-50/60 border border-emerald-100 flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="flex-1">
                 <h3 className="font-serif text-lg font-bold text-boutique-charcoal">
@@ -107,9 +107,9 @@ const Contact = () => {
             </div>
 
             {/* Direct Phone Call Card */}
-            <div className="p-6 rounded-3xl bg-boutique-blush/60 border border-boutique-blushMedium flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-2xl bg-boutique-berry text-white flex items-center justify-center flex-shrink-0">
-                <Phone className="w-6 h-6" />
+            <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-boutique-blush/60 border border-boutique-blushMedium flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-boutique-berry text-white flex items-center justify-center flex-shrink-0">
+                <Phone className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="flex-1">
                 <h3 className="font-serif text-lg font-bold text-boutique-charcoal">
@@ -128,9 +128,9 @@ const Contact = () => {
             </div>
 
             {/* Hours & Schedule Card */}
-            <div className="p-6 rounded-3xl bg-white border border-boutique-blushMedium shadow-sm flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-2xl bg-boutique-blushMedium text-boutique-deepRose flex items-center justify-center flex-shrink-0">
-                <Clock className="w-6 h-6" />
+            <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-boutique-blushMedium shadow-sm flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-boutique-blushMedium text-boutique-deepRose flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="flex-1">
                 <h3 className="font-serif text-lg font-bold text-boutique-charcoal">
@@ -146,9 +146,9 @@ const Contact = () => {
             </div>
 
             {/* Instagram Card */}
-            <div className="p-6 rounded-3xl bg-white border border-boutique-blushMedium shadow-sm flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-rose-500 text-white flex items-center justify-center flex-shrink-0">
-                <Instagram className="w-6 h-6" />
+            <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-boutique-blushMedium shadow-sm flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-rose-500 text-white flex items-center justify-center flex-shrink-0">
+                <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="flex-1">
                 <h3 className="font-serif text-lg font-bold text-boutique-charcoal">
@@ -169,9 +169,9 @@ const Contact = () => {
             </div>
 
             {/* Boutique Address Card */}
-            <div className="p-6 rounded-3xl bg-white border border-boutique-blushMedium shadow-sm flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-2xl bg-boutique-blushMedium text-boutique-deepRose flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-6 h-6" />
+            <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-boutique-blushMedium shadow-sm flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-boutique-blushMedium text-boutique-deepRose flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="flex-1">
                 <h3 className="font-serif text-lg font-bold text-boutique-charcoal">
@@ -204,7 +204,7 @@ const Contact = () => {
           </div>
 
           {/* Right Column: Contact & Appointment Form */}
-          <div className="lg:col-span-7 bg-boutique-blushLight p-8 sm:p-10 rounded-3xl border border-boutique-blushMedium shadow-card">
+          <div className="lg:col-span-7 bg-boutique-blushLight p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-boutique-blushMedium shadow-card">
             
             <div className="mb-6">
               <h3 className="font-serif text-2xl sm:text-3xl font-bold text-boutique-charcoal">

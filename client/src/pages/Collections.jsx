@@ -31,11 +31,11 @@ const Collections = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Banner Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
           <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-boutique-blushMedium/70 mb-3 border border-boutique-pink/30">
             Digital Showroom
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-4">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-3 sm:mb-4">
             Curated Fashion Collections
           </h1>
           <p className="text-gray-600 text-sm sm:text-base font-light leading-relaxed">
@@ -44,12 +44,12 @@ const Collections = () => {
         </div>
 
         {/* Tab Filters */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-12">
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-8 sm:mb-12">
           {filterTabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setSearchParams(tab.value === 'all' ? {} : { tab: tab.value })}
-              className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all ${
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all ${
                 activeTab.toLowerCase() === tab.value.toLowerCase()
                   ? 'bg-boutique-berry text-white shadow-md'
                   : 'bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium border border-boutique-blushMedium'
@@ -61,7 +61,7 @@ const Collections = () => {
         </div>
 
         {/* Categories Showcase Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filteredCategories.map((category) => (
             <div
               key={category.id}

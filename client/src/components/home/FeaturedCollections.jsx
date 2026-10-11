@@ -27,12 +27,12 @@ const FeaturedCollections = () => {
         />
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 min-[500px]:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {featuredList.map((category) => (
             <Link
               key={category.id}
               to={`/products?category=${category.slug}`}
-              className="group relative rounded-3xl overflow-hidden aspect-[3/4] bg-boutique-blush shadow-card hover:shadow-luxury transition-all duration-500 hover:-translate-y-1.5"
+              className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-[4/3] min-[500px]:aspect-[3/4] bg-boutique-blush shadow-card hover:shadow-luxury transition-all duration-500 hover:-translate-y-1.5"
             >
               {/* Background Image */}
               <img
@@ -43,19 +43,19 @@ const FeaturedCollections = () => {
               />
 
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent"></div>
 
               {/* Content Box */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
+              <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-end text-white">
                 <span className="text-[10px] uppercase tracking-[0.25em] text-pink-200 font-semibold mb-1">
                   {category.parentCategory}
                 </span>
 
-                <h3 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2 group-hover:text-pink-200 transition-colors">
+                <h3 className="font-serif text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5 sm:mb-2 group-hover:text-pink-200 transition-colors">
                   {category.name}
                 </h3>
 
-                <p className="text-gray-300 text-xs sm:text-sm line-clamp-2 font-light mb-4">
+                <p className="text-gray-300 text-xs sm:text-sm line-clamp-2 font-light mb-3 sm:mb-4">
                   {category.description}
                 </p>
 

@@ -32,24 +32,24 @@ const WhyChooseUs = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {WHY_CHOOSE_US.map((item, index) => {
             const Icon = iconMap[item.icon] || Sparkles;
 
             return (
               <div
                 key={index}
-                className="p-8 rounded-3xl bg-boutique-charcoalLight/70 border border-white/10 hover:border-boutique-pink/40 hover:bg-boutique-charcoalLight transition-all duration-300 group"
+                className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-boutique-charcoalLight/70 border border-white/10 hover:border-boutique-pink/40 hover:bg-boutique-charcoalLight transition-all duration-300 group"
               >
-                <div className="w-12 h-12 rounded-2xl bg-boutique-berry/40 border border-boutique-pink/20 flex items-center justify-center text-boutique-pink mb-6 group-hover:scale-110 transition-transform">
-                  <Icon className="w-6 h-6" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-boutique-berry/40 border border-boutique-pink/20 flex items-center justify-center text-boutique-pink mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
 
-                <h3 className="font-serif text-xl font-bold text-white mb-2.5">
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-white mb-2">
                   {item.title}
                 </h3>
 
-                <p className="text-gray-400 text-sm font-light leading-relaxed">
+                <p className="text-gray-400 text-xs sm:text-sm font-light leading-relaxed">
                   {item.description}
                 </p>
               </div>

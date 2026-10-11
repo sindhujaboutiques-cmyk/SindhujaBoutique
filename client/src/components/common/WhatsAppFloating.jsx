@@ -7,7 +7,7 @@ const WhatsAppFloating = () => {
   const [showTooltip, setShowTooltip] = useState(true);
 
   return (
-    <div className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-40 flex items-center group">
+    <div className="fixed bottom-8 right-8 z-40 hidden md:flex items-center group">
       {/* Interactive Tooltip / Prompt */}
       {showTooltip && (
         <div className="hidden sm:flex items-center mr-3 bg-white text-boutique-charcoal text-xs px-3.5 py-2 rounded-full shadow-luxury border border-boutique-blushMedium animate-fade-in">

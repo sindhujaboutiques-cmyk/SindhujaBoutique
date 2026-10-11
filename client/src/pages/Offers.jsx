@@ -20,11 +20,11 @@ const Offers = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Banner */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
           <span className="inline-block px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-[0.25em] uppercase text-boutique-berry bg-boutique-blushMedium/70 mb-3 border border-boutique-pink/30">
             Seasonal Promotions
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-4">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-boutique-charcoal mb-3 sm:mb-4">
             Boutique Offers & Packages
           </h1>
           <p className="text-gray-600 text-sm sm:text-base font-light leading-relaxed">
@@ -44,21 +44,21 @@ const Offers = () => {
             />
 
             {/* Upcoming Promo Teaser Cards */}
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-              <div className="p-6 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium">
-                <Tag className="w-6 h-6 text-boutique-rose mx-auto mb-2" />
+            <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-center">
+              <div className="p-5 sm:p-6 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium">
+                <Tag className="w-5 h-5 sm:w-6 sm:h-6 text-boutique-rose mx-auto mb-2" />
                 <h4 className="font-serif text-base font-bold text-boutique-charcoal mb-1">Bridal Packages</h4>
                 <p className="text-xs text-gray-500 font-light">Custom trousseau & wedding party stitching</p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium">
-                <Sparkles className="w-6 h-6 text-boutique-rose mx-auto mb-2" />
+              <div className="p-5 sm:p-6 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-boutique-rose mx-auto mb-2" />
                 <h4 className="font-serif text-base font-bold text-boutique-charcoal mb-1">Festival Specials</h4>
                 <p className="text-xs text-gray-500 font-light">Diwali, Pongal & Navratri collection specials</p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium">
-                <Gift className="w-6 h-6 text-boutique-rose mx-auto mb-2" />
+              <div className="p-5 sm:p-6 rounded-2xl bg-boutique-blushLight border border-boutique-blushMedium">
+                <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-boutique-rose mx-auto mb-2" />
                 <h4 className="font-serif text-base font-bold text-boutique-charcoal mb-1">Custom Stitching</h4>
                 <p className="text-xs text-gray-500 font-light">Special combo rates for multiple blouse orders</p>
               </div>

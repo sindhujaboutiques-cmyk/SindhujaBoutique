@@ -40,7 +40,7 @@ function App() {
         <Navbar />
 
         {/* Dynamic Route Pages */}
-        <main className="flex-grow">
+        <main className="flex-grow pb-20 md:pb-0">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
