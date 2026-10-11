@@ -22,8 +22,8 @@ const createOrder = async (req, res) => {
       });
     }
 
-    const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_test_Tmer0ujVPLMIlP';
-    const key_secret = process.env.RAZORPAY_KEY_SECRET || '5vTpgADNttdT1cyPV6cV91ny';
+    const key_id = process.env.RAZORPAY_KEY_ID;
+    const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!key_id || !key_secret) {
       return res.status(401).json({
@@ -83,7 +83,7 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    const key_secret = process.env.RAZORPAY_KEY_SECRET || '5vTpgADNttdT1cyPV6cV91ny';
+    const key_secret = process.env.RAZORPAY_KEY_SECRET;
     if (!key_secret) {
       return res.status(401).json({
         success: false,
@@ -130,7 +130,7 @@ const verifyPayment = async (req, res) => {
  * @access  Public
  */
 const getPublicKey = (req, res) => {
-  const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_test_Tmer0ujVPLMIlP';
+  const key_id = process.env.RAZORPAY_KEY_ID || '';
   return res.status(200).json({
     success: true,
     key_id

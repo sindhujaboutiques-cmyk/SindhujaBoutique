@@ -7,14 +7,13 @@ import {
 } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import { useCart, formatINR } from '../context/CartContext';
-import { initiateRazorpayPayment, getRazorpayKey } from '../services/razorpay';
+import { initiateRazorpayPayment } from '../services/razorpay';
 import { deductProductStock } from '../services/api';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
 
 const Checkout = () => {
   const { cart, cartCount, cartSubtotal, shippingFee, cartTotal, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
-  const razorpayKey = getRazorpayKey();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -104,11 +103,6 @@ const Checkout = () => {
       console.warn('LocalStorage save error:', err);
     }
 
-    if (!razorpayKey) {
-      setErrorMsg('Razorpay payment gateway credentials are not yet initialized. Please verify your environment or contact store administrator.');
-      setIsSubmitting(false);
-      return;
-    }
 
     // Initiate Razorpay Standard Checkout
     initiateRazorpayPayment({

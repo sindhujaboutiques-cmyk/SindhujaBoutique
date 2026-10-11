@@ -30,12 +30,12 @@ export const loadRazorpayScript = () => {
   });
 };
 
-// Retrieve public key from Vite env or fallback to boutique test credentials
+// Retrieve public key from Vite env or window
 export const getRazorpayKey = () => {
   return (
     import.meta.env.VITE_RAZORPAY_KEY_ID ||
     window.__RAZORPAY_KEY_ID__ ||
-    'rzp_test_Tmer0ujVPLMIlP'
+    ''
   );
 };
 
@@ -75,7 +75,11 @@ export const initiateRazorpayPayment = async ({
     }
 
     if (!razorpayKey) {
-      razorpayKey = 'rzp_test_Tmer0ujVPLMIlP';
+      onFailure?.({
+        code: 'KEY_NOT_CONFIGURED',
+        message: 'Razorpay payment gateway credentials are not yet initialized. Please configure RAZORPAY_KEY_ID in your environment variables.'
+      });
+      return;
     }
 
     // Minimum transaction check: 100 paise (₹1.00)
