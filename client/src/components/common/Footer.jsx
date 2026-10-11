@@ -14,8 +14,18 @@ const Footer = () => {
           
           {/* Brand Column */}
           <div className="space-y-4">
-            <Link to="/" className="inline-block">
-              <img src={logoImg} alt={BUSINESS_CONFIG.name} className="h-14 w-auto object-contain brightness-0 invert" />
+            <Link to="/" className="inline-flex items-center space-x-3 group">
+              <div className="w-14 h-14 rounded-full bg-white p-1 shadow-md flex items-center justify-center overflow-hidden border border-boutique-pink/30 group-hover:scale-105 transition-transform flex-shrink-0">
+                <img src={logoImg} alt={BUSINESS_CONFIG.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+              <div>
+                <span className="font-serif text-xl font-bold tracking-wider text-white block group-hover:text-boutique-pink transition-colors">
+                  SINDUJA
+                </span>
+                <span className="text-[10px] tracking-[0.25em] text-boutique-pink uppercase block font-semibold">
+                  BOUTIQUE
+                </span>
+              </div>
             </Link>
             <p className="text-gray-300 text-sm leading-relaxed font-light">
               Elevating women's ethnic fashion with bespoke blouse designing, custom tailoring, bridal trousseau, and curated celebration ensembles.
