@@ -8,6 +8,7 @@ import MobileActionBar from './components/common/MobileActionBar';
 import WhatsAppFloating from './components/common/WhatsAppFloating';
 import CartDrawer from './components/cart/CartDrawer';
 import { CartProvider } from './context/CartContext';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Pages
 import Home from './pages/Home';
@@ -50,23 +51,25 @@ function App() {
 
           {/* Dynamic Route Pages */}
           <main className="flex-grow pb-20 md:pb-0">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/collections" element={<Collections />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/:slug" element={<ProductDetail />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/new-arrivals" element={<NewArrivals />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order-success/:orderId" element={<OrderSuccess />} />
-              <Route path="/admin" element={<Admin />} />
-              {/* Fallback route */}
-              <Route path="*" element={<Home />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/collections" element={<Collections />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/:slug" element={<ProductDetail />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/new-arrivals" element={<NewArrivals />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order-success/:orderId" element={<OrderSuccess />} />
+                <Route path="/admin" element={<Admin />} />
+                {/* Fallback route */}
+                <Route path="*" element={<Home />} />
+              </Routes>
+            </ErrorBoundary>
           </main>
 
         {/* Global Floating WhatsApp Quick Action */}

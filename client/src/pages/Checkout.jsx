@@ -14,28 +14,6 @@ import { BUSINESS_CONFIG } from '../config/businessConfig';
 const Checkout = () => {
   const { cart, cartCount, cartSubtotal, shippingFee, cartTotal, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
-
-  // Redirect if cart is empty
-  if (cart.length === 0) {
-    return (
-      <div className="py-20 text-center max-w-md mx-auto px-4">
-        <SEO title="Checkout" description="Complete your boutique order at Sinduja Boutique." />
-        <ShoppingBag className="w-16 h-16 text-boutique-rose mx-auto mb-4 stroke-[1.5]" />
-        <h2 className="font-serif text-2xl font-bold text-boutique-charcoal">Your Bag is Empty</h2>
-        <p className="text-gray-500 text-xs mt-2 mb-6">
-          Add your favorite sarees, blouses, or handcrafted outfits to proceed to checkout.
-        </p>
-        <Link
-          to="/products"
-          className="inline-flex items-center px-6 py-3 rounded-full bg-boutique-berry text-white text-xs font-bold uppercase tracking-widest hover:bg-boutique-deepRose transition-colors shadow-md"
-        >
-          Browse Catalogue
-        </Link>
-      </div>
-    );
-  }
-
-  const hasCustomizableItems = cart.some((item) => item.customizable);
   const razorpayKey = getRazorpayKey();
 
   const [formData, setFormData] = useState({
@@ -54,10 +32,32 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const hasCustomizableItems = Array.isArray(cart) && cart.some((item) => item.customizable);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // If cart is empty, show empty bag state (rendered AFTER all hooks)
+  if (!cart || cart.length === 0) {
+    return (
+      <div className="py-20 text-center max-w-md mx-auto px-4 min-h-[60vh] flex flex-col items-center justify-center">
+        <SEO title="Checkout" description="Complete your boutique order at Sinduja Boutique." />
+        <ShoppingBag className="w-16 h-16 text-boutique-rose mx-auto mb-4 stroke-[1.5]" />
+        <h2 className="font-serif text-2xl font-bold text-boutique-charcoal">Your Bag is Empty</h2>
+        <p className="text-gray-500 text-xs mt-2 mb-6">
+          Add your favorite sarees, blouses, or handcrafted outfits to proceed to checkout.
+        </p>
+        <Link
+          to="/products"
+          className="inline-flex items-center px-6 py-3 rounded-full bg-boutique-berry text-white text-xs font-bold uppercase tracking-widest hover:bg-boutique-deepRose transition-colors shadow-md"
+        >
+          Browse Catalogue
+        </Link>
+      </div>
+    );
+  }
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
