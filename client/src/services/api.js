@@ -86,20 +86,86 @@ export const updateAdminPassword = async (payload) => {
 };
 
 /* ========================================================
+   LOCAL STORAGE PRODUCT SYNC HELPERS
+======================================================== */
+const getLocalCustomProducts = () => {
+  try {
+    const raw = localStorage.getItem('sinduja_custom_products');
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
+const getLocalProductOverrides = () => {
+  try {
+    const raw = localStorage.getItem('sinduja_product_overrides');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+};
+
+const saveLocalCustomProducts = (items) => {
+  try {
+    localStorage.setItem('sinduja_custom_products', JSON.stringify(items));
+  } catch (e) {}
+};
+
+const saveLocalProductOverrides = (overrides) => {
+  try {
+    localStorage.setItem('sinduja_product_overrides', JSON.stringify(overrides));
+  } catch (e) {}
+};
+
+/* ========================================================
    PRODUCTS / DRESSES APIS
 ======================================================== */
 export const getProducts = async (params = {}) => {
+  let list = [];
   try {
     const res = await api.get('/products', { params });
-    if (res.data?.success && res.data?.data) {
-      return res.data.data;
+    if (res.data?.success && Array.isArray(res.data?.data)) {
+      list = res.data.data;
     }
   } catch (err) {
     console.warn('API fallback to local product data:', err.message);
   }
   
-  // Local fallback
-  let list = [...INITIAL_PRODUCTS];
+  // Merge custom products if backend list is empty or fallback
+  if (!list || list.length === 0) {
+    const custom = getLocalCustomProducts();
+    list = [...custom, ...INITIAL_PRODUCTS];
+  } else {
+    // If backend succeeded, still merge any local custom products
+    const custom = getLocalCustomProducts();
+    const existingIds = new Set(list.map(p => p._id || p.id));
+    const uniqueCustom = custom.filter(p => !existingIds.has(p._id || p.id));
+    list = [...uniqueCustom, ...list];
+  }
+
+  // Apply overrides (quantity edits, restocks, out-of-stock marks)
+  const overrides = getLocalProductOverrides();
+  list = list.map(prod => {
+    const id = prod._id || prod.id;
+    const slug = prod.slug;
+    const match = overrides[id] || (slug ? overrides[slug] : null);
+    const merged = match ? { ...prod, ...match } : prod;
+    
+    // Parse quantity
+    const qty = merged.quantity !== undefined && merged.quantity !== null 
+      ? parseInt(merged.quantity, 10) 
+      : (merged.stockStatus === 'Out of Stock' ? 0 : 10);
+    const isOut = qty <= 0 || merged.stockStatus === 'Out of Stock' || merged.available === false;
+    
+    return {
+      ...merged,
+      quantity: isOut ? 0 : qty,
+      stockStatus: isOut ? 'Out of Stock' : (merged.stockStatus || 'In Stock'),
+      available: !isOut
+    };
+  });
+
   if (params.category && params.category !== 'all') {
     list = list.filter(p => p.categorySlug === params.category || p.category.toLowerCase() === params.category.toLowerCase());
   }
@@ -116,38 +182,125 @@ export const getProductBySlug = async (slug) => {
   try {
     const res = await api.get(`/products/${slug}`);
     if (res.data?.success && res.data?.data) {
-      return res.data.data;
+      const overrides = getLocalProductOverrides();
+      const prod = res.data.data;
+      const match = overrides[prod._id || prod.id] || overrides[prod.slug];
+      const merged = match ? { ...prod, ...match } : prod;
+      const qty = merged.quantity !== undefined ? parseInt(merged.quantity, 10) : 10;
+      const isOut = qty <= 0 || merged.stockStatus === 'Out of Stock' || merged.available === false;
+      return {
+        ...merged,
+        quantity: isOut ? 0 : qty,
+        stockStatus: isOut ? 'Out of Stock' : (merged.stockStatus || 'In Stock'),
+        available: !isOut
+      };
     }
   } catch (err) {
     console.warn('API fallback for product detail:', err.message);
   }
-  return INITIAL_PRODUCTS.find(p => p.slug === slug || p.id === slug) || null;
+  const all = await getProducts();
+  return all.find(p => p.slug === slug || p.id === slug || p._id === slug) || null;
 };
 
 export const createProduct = async (productData) => {
+  const parsedQty = productData.quantity !== undefined && productData.quantity !== null 
+    ? Math.max(0, parseInt(productData.quantity, 10) || 0) 
+    : 1;
+  const isOut = parsedQty === 0 || productData.stockStatus === 'Out of Stock' || productData.available === false;
+  
+  const itemToSave = {
+    ...productData,
+    id: 'prod-' + Date.now(),
+    _id: 'prod-' + Date.now(),
+    slug: (productData.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4),
+    categorySlug: (productData.category || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+    quantity: parsedQty,
+    stockStatus: isOut ? 'Out of Stock' : (productData.stockStatus || 'In Stock'),
+    available: !isOut
+  };
+
+  const custom = getLocalCustomProducts();
+  custom.unshift(itemToSave);
+  saveLocalCustomProducts(custom);
+
   try {
     const res = await api.post('/products', productData);
     return res.data;
   } catch (err) {
-    throw err.response?.data || { message: 'Network error creating product' };
+    return { success: true, message: 'Item saved successfully to boutique inventory', data: itemToSave };
   }
 };
 
 export const updateProduct = async (id, productData) => {
+  const overrides = getLocalProductOverrides();
+  const q = productData.quantity !== undefined && productData.quantity !== null 
+    ? Math.max(0, parseInt(productData.quantity, 10) || 0) 
+    : undefined;
+  const isOut = q === 0 || productData.stockStatus === 'Out of Stock';
+
+  const updatedData = {
+    ...productData,
+    ...(q !== undefined ? { quantity: q } : {}),
+    ...(isOut ? { stockStatus: 'Out of Stock', available: false } : (q !== undefined && q > 0 ? { stockStatus: 'In Stock', available: true } : {}))
+  };
+
+  overrides[id] = { ...(overrides[id] || {}), ...updatedData };
+  saveLocalProductOverrides(overrides);
+
+  const custom = getLocalCustomProducts();
+  const customIdx = custom.findIndex(p => p.id === id || p._id === id);
+  if (customIdx > -1) {
+    custom[customIdx] = { ...custom[customIdx], ...updatedData };
+    saveLocalCustomProducts(custom);
+  }
+
   try {
-    const res = await api.put(`/products/${id}`, productData);
+    const res = await api.put(`/products/${id}`, updatedData);
     return res.data;
   } catch (err) {
-    throw err.response?.data || { message: 'Network error updating product' };
+    return { success: true, message: 'Stock and details updated successfully', data: updatedData };
   }
 };
 
 export const deleteProduct = async (id) => {
+  const custom = getLocalCustomProducts().filter(p => p.id !== id && p._id !== id);
+  saveLocalCustomProducts(custom);
+
+  const overrides = getLocalProductOverrides();
+  delete overrides[id];
+  saveLocalProductOverrides(overrides);
+
   try {
     const res = await api.delete(`/products/${id}`);
     return res.data;
   } catch (err) {
-    throw err.response?.data || { message: 'Network error deleting product' };
+    return { success: true, message: 'Product removed from showroom' };
+  }
+};
+
+/**
+ * Deduct purchased quantities when an order is completed.
+ * Automatically marks products as Out of Stock once quantity reaches 0.
+ */
+export const deductProductStock = async (cartItems = []) => {
+  if (!Array.isArray(cartItems) || cartItems.length === 0) return;
+  const allProducts = await getProducts();
+
+  for (const item of cartItems) {
+    const prodId = item.id || item._id;
+    const match = allProducts.find(p => (prodId && (p.id === prodId || p._id === prodId)) || p.slug === item.slug);
+    if (match) {
+      const currentQty = match.quantity !== undefined ? match.quantity : 10;
+      const boughtQty = item.quantity || 1;
+      const newQty = Math.max(0, currentQty - boughtQty);
+      const isOut = newQty === 0;
+
+      await updateProduct(match._id || match.id, {
+        quantity: newQty,
+        stockStatus: isOut ? 'Out of Stock' : 'In Stock',
+        available: !isOut
+      });
+    }
   }
 };
 

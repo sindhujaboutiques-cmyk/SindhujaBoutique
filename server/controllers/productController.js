@@ -98,6 +98,7 @@ const createProduct = async (req, res) => {
       featured, 
       newArrival, 
       stockStatus,
+      quantity,
       tags 
     } = req.body;
 
@@ -107,6 +108,11 @@ const createProduct = async (req, res) => {
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4);
     const categorySlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const parsedQty = quantity !== undefined && quantity !== null ? Math.max(0, parseInt(quantity, 10) || 0) : 1;
+    const isOut = parsedQty === 0 || stockStatus === 'Out of Stock' || available === false;
+    const finalStockStatus = isOut ? 'Out of Stock' : (stockStatus || 'In Stock');
+    const finalAvailable = !isOut;
 
     const newProductData = {
       name,
@@ -121,8 +127,9 @@ const createProduct = async (req, res) => {
       colors: colors || ['As Shown'],
       material: material || 'Premium Fabric',
       customizable: customizable !== undefined ? customizable : true,
-      available: available !== undefined ? available : true,
-      stockStatus: stockStatus || (available ? 'In Stock' : 'Out of Stock'),
+      quantity: parsedQty,
+      available: finalAvailable,
+      stockStatus: finalStockStatus,
       featured: !!featured,
       newArrival: !!newArrival,
       tags: tags || [category],
@@ -148,10 +155,23 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const updates = { ...req.body };
 
     if (updates.category && !updates.categorySlug) {
       updates.categorySlug = updates.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    }
+
+    if (updates.quantity !== undefined && updates.quantity !== null) {
+      const q = Math.max(0, parseInt(updates.quantity, 10) || 0);
+      updates.quantity = q;
+      if (q === 0) {
+        updates.stockStatus = 'Out of Stock';
+        updates.available = false;
+      } else if (q > 0 && updates.stockStatus === 'Out of Stock' && !req.body.stockStatus) {
+        // If restocked and stockStatus wasn't intentionally forced to Out of Stock
+        updates.stockStatus = 'In Stock';
+        updates.available = true;
+      }
     }
 
     if (getIsConnected()) {

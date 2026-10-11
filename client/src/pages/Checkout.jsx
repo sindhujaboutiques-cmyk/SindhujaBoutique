@@ -8,6 +8,7 @@ import {
 import SEO from '../components/common/SEO';
 import { useCart, formatINR } from '../context/CartContext';
 import { initiateRazorpayPayment, getRazorpayKey } from '../services/razorpay';
+import { deductProductStock } from '../services/api';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
 
 const Checkout = () => {
@@ -120,10 +121,15 @@ const Checkout = () => {
         customerName: formData.fullName,
         customerEmail: formData.email,
         customerPhone: formData.phone,
-        onSuccess: (response) => {
+        onSuccess: async (response) => {
           orderData.paymentId = response.razorpay_payment_id;
           orderData.paymentStatus = 'Paid';
           localStorage.setItem(`sinduja_order_${generatedOrderId}`, JSON.stringify(orderData));
+          try {
+            await deductProductStock(cart);
+          } catch (e) {
+            console.warn('Stock deduct error', e);
+          }
           clearCart();
           setIsSubmitting(false);
           navigate(`/order-success/${generatedOrderId}`);
@@ -136,12 +142,15 @@ const Checkout = () => {
       return;
     }
 
-    // Cash on Delivery or Direct WhatsApp Order
-    setTimeout(() => {
-      clearCart();
-      setIsSubmitting(false);
-      navigate(`/order-success/${generatedOrderId}`);
-    }, 600);
+    // Cash on Delivery or Direct WhatsApp Order: Automatically deduct product quantities & mark out of stock when sold out
+    try {
+      await deductProductStock(cart);
+    } catch (e) {
+      console.warn('Stock deduct error', e);
+    }
+    clearCart();
+    setIsSubmitting(false);
+    navigate(`/order-success/${generatedOrderId}`);
   };
 
   return (

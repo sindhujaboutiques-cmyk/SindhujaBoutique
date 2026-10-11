@@ -87,8 +87,10 @@ const ProductDetail = () => {
     );
   }
 
+  const isOutOfStock = product?.quantity === 0 || product?.stockStatus === 'Out of Stock' || product?.available === false;
+
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || isOutOfStock) return;
     addToCart(product, {
       size: selectedSize,
       color: selectedColor,
@@ -100,7 +102,7 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    if (!product) return;
+    if (!product || isOutOfStock) return;
     addToCart(product, {
       size: selectedSize,
       color: selectedColor,
@@ -110,7 +112,9 @@ const ProductDetail = () => {
     navigate('/checkout');
   };
 
-  const customEnquiryParam = `${product.name}${selectedSize ? ` (Size: ${selectedSize})` : ''}${selectedColor ? ` (Color: ${selectedColor})` : ''}`;
+  const customEnquiryParam = isOutOfStock
+    ? `Enquiry for Restock: ${product.name}`
+    : `${product.name}${selectedSize ? ` (Size: ${selectedSize})` : ''}${selectedColor ? ` (Color: ${selectedColor})` : ''}`;
   const whatsappUrl = BUSINESS_CONFIG.getWhatsAppUrl('product', customEnquiryParam);
 
   return (
@@ -164,12 +168,18 @@ const ProductDetail = () => {
               <span className="px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase text-boutique-rose bg-boutique-blushMedium/60">
                 {product.category}
               </span>
-              {product.newArrival && (
-                <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-boutique-berry text-white">
-                  New Arrival
+              {isOutOfStock ? (
+                <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-rose-600 text-white shadow-sm">
+                  Out of Stock
                 </span>
+              ) : (
+                product.newArrival && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-boutique-berry text-white">
+                    New Arrival
+                  </span>
+                )
               )}
-              {product.customizable && (
+              {product.customizable && !isOutOfStock && (
                 <span className="px-3 py-1 rounded-full text-xs font-semibold tracking-wider bg-boutique-blush text-boutique-deepRose border border-boutique-pink/30 flex items-center">
                   <Scissors className="w-3 h-3 mr-1" />
                   Custom Stitching Available
@@ -312,29 +322,41 @@ const ProductDetail = () => {
 
             {/* Action Buttons (Desktop & Tablet) */}
             <div className="pt-2 space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className={`w-full flex items-center justify-center py-4 px-6 rounded-full text-xs uppercase font-bold tracking-widest transition-all shadow-md active:scale-95 ${
-                    addedAnim
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-deepRose border border-boutique-rose/40'
-                  }`}
-                >
-                  {addedAnim ? <Check className="w-4 h-4 mr-2" /> : <ShoppingBag className="w-4 h-4 mr-2" />}
-                  <span>{addedAnim ? 'Added to Bag!' : 'Add to Bag'}</span>
-                </button>
+              {isOutOfStock ? (
+                <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium space-y-1">
+                  <div className="flex items-center space-x-2 font-bold text-sm text-rose-900">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
+                    <span>Currently Sold Out / Out of Stock</span>
+                  </div>
+                  <p className="text-gray-600 text-[11px] font-light">
+                    Every piece of this material design has been sold. Tap the WhatsApp button below to request next batch restock or customized stitching.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className={`w-full flex items-center justify-center py-4 px-6 rounded-full text-xs uppercase font-bold tracking-widest transition-all shadow-md active:scale-95 ${
+                      addedAnim
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-deepRose border border-boutique-rose/40'
+                    }`}
+                  >
+                    {addedAnim ? <Check className="w-4 h-4 mr-2" /> : <ShoppingBag className="w-4 h-4 mr-2" />}
+                    <span>{addedAnim ? 'Added to Bag!' : 'Add to Bag'}</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={handleBuyNow}
-                  className="w-full flex items-center justify-center py-4 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-white bg-boutique-berry hover:bg-boutique-plum transition-all shadow-lg active:scale-95 transform hover:-translate-y-0.5"
-                >
-                  <Zap className="w-4 h-4 mr-2 fill-white" />
-                  <span>Buy Now</span>
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={handleBuyNow}
+                    className="w-full flex items-center justify-center py-4 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-white bg-boutique-berry hover:bg-boutique-plum transition-all shadow-lg active:scale-95 transform hover:-translate-y-0.5"
+                  >
+                    <Zap className="w-4 h-4 mr-2 fill-white" />
+                    <span>Buy Now</span>
+                  </button>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <a
@@ -344,7 +366,7 @@ const ProductDetail = () => {
                   className="w-full flex items-center justify-center py-3.5 px-6 rounded-full text-xs uppercase font-bold tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-md active:scale-95"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  <span>Enquire on WhatsApp</span>
+                  <span>{isOutOfStock ? 'Enquire Restock on WhatsApp' : 'Enquire on WhatsApp'}</span>
                 </a>
 
                 <a
@@ -375,41 +397,61 @@ const ProductDetail = () => {
 
         {/* Flipkart / Amazon Style Mobile Bottom Sticky Bar */}
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-boutique-blushMedium px-3 py-2 md:hidden shadow-[0_-6px_25px_rgba(0,0,0,0.12)]">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={openCart}
-              className="relative flex flex-col items-center justify-center min-w-[46px] h-12 rounded-xl bg-gray-50 border border-gray-200 text-boutique-charcoal active:scale-95"
-              title="View Bag"
-            >
-              <ShoppingBag className="w-5 h-5 text-boutique-berry" />
-              <span className="text-[9px] font-semibold">Bag</span>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] rounded-full bg-boutique-berry text-white text-[9px] font-bold flex items-center justify-center px-0.5">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              className={`flex-1 h-12 rounded-xl text-xs font-bold uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 transition-all shadow-sm ${
-                addedAnim
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-boutique-blush text-boutique-deepRose border border-boutique-rose/40'
-              }`}
-            >
-              {addedAnim ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
-              <span>{addedAnim ? 'Added' : 'Add to Bag'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleBuyNow}
-              className="flex-1 h-12 rounded-xl bg-boutique-berry hover:bg-boutique-plum text-white text-xs font-bold uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 shadow-md shadow-boutique-berry/25"
-            >
-              <Zap className="w-4 h-4 fill-white" />
-              <span>Buy Now</span>
-            </button>
-          </div>
+          {isOutOfStock ? (
+            <div className="flex items-center gap-2">
+              <button
+                disabled
+                className="flex-1 h-12 rounded-xl bg-gray-200 text-gray-500 font-bold text-xs uppercase tracking-wider flex items-center justify-center cursor-not-allowed"
+              >
+                Sold Out (Out of Stock)
+              </button>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 h-12 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Enquire Restock</span>
+              </a>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openCart}
+                className="relative flex flex-col items-center justify-center min-w-[46px] h-12 rounded-xl bg-gray-50 border border-gray-200 text-boutique-charcoal active:scale-95"
+                title="View Bag"
+              >
+                <ShoppingBag className="w-5 h-5 text-boutique-berry" />
+                <span className="text-[9px] font-semibold">Bag</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] rounded-full bg-boutique-berry text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className={`flex-1 h-12 rounded-xl text-xs font-bold uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 transition-all shadow-sm ${
+                  addedAnim
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-boutique-blush text-boutique-deepRose border border-boutique-rose/40'
+                }`}
+              >
+                {addedAnim ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+                <span>{addedAnim ? 'Added' : 'Add to Bag'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleBuyNow}
+                className="flex-1 h-12 rounded-xl bg-boutique-berry hover:bg-boutique-plum text-white text-xs font-bold uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 shadow-md shadow-boutique-berry/25"
+              >
+                <Zap className="w-4 h-4 fill-white" />
+                <span>Buy Now</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Related Products Section */}

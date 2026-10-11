@@ -3,7 +3,7 @@ import {
   Plus, Trash2, Edit3, Settings, Image as ImageIcon, ShoppingBag, 
   MessageSquare, Save, CheckCircle, RefreshCw, AlertCircle, Lock, 
   Eye, EyeOff, LogOut, Phone, ExternalLink, X, Search, 
-  Sparkles, ShieldCheck, User, Send, Camera
+  Sparkles, ShieldCheck, User, Send, Camera, AlertTriangle, Package, Check, Minus
 } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import { 
@@ -147,6 +147,7 @@ const Admin = () => {
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all'); // 'all' | 'in-stock' | 'out-of-stock'
 
   // Edit Product Modal State
   const [editingProduct, setEditingProduct] = useState(null);
@@ -159,6 +160,7 @@ const Admin = () => {
     description: '',
     price: '₹2,499',
     originalPrice: '₹3,200',
+    quantity: 1,
     stockStatus: 'In Stock',
     images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'],
     material: 'Pure Soft Silk Blend',
@@ -338,25 +340,31 @@ const Admin = () => {
     }
 
     try {
+      const qty = newProduct.quantity !== undefined && newProduct.quantity !== ''
+        ? Math.max(0, parseInt(newProduct.quantity, 10) || 0)
+        : 1;
+      const isOut = qty === 0 || newProduct.stockStatus === 'Out of Stock';
+
       const payload = {
         name: newProduct.name,
         category: newProduct.category,
         description: newProduct.description,
         price: newProduct.price || 'Price on Enquiry',
         originalPrice: newProduct.originalPrice || '',
-        stockStatus: newProduct.stockStatus || 'In Stock',
+        quantity: qty,
+        stockStatus: isOut ? 'Out of Stock' : (newProduct.stockStatus || 'In Stock'),
         images: newProduct.images,
         sizes: newProduct.sizes,
         colors: newProduct.colors,
         material: newProduct.material,
         customizable: newProduct.customizable,
-        available: newProduct.stockStatus !== 'Out of Stock',
+        available: !isOut,
         newArrival: newProduct.newArrival,
         featured: newProduct.featured
       };
 
       await createProduct(payload);
-      notify(`"${newProduct.name}" published successfully to showroom!`);
+      notify(`"${newProduct.name}" published with ${qty} unit(s) in inventory!`);
       
       setNewProduct({
         name: '',
@@ -364,6 +372,7 @@ const Admin = () => {
         description: '',
         price: '₹2,499',
         originalPrice: '',
+        quantity: 1,
         stockStatus: 'In Stock',
         images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'],
         material: 'Pure Soft Silk Blend',
@@ -393,17 +402,53 @@ const Admin = () => {
   };
 
   const handleToggleStock = async (product) => {
-    const newStatus = product.stockStatus === 'Out of Stock' ? 'In Stock' : 'Out of Stock';
-    const isAvail = newStatus !== 'Out of Stock';
+    const isCurrentlyOut = product.stockStatus === 'Out of Stock' || product.quantity === 0 || product.available === false;
+    const newStatus = isCurrentlyOut ? 'In Stock' : 'Out of Stock';
+    const isAvail = !isCurrentlyOut ? false : true;
+    const newQty = isCurrentlyOut ? (product.quantity > 0 ? product.quantity : 10) : 0;
     try {
       await updateProduct(product._id || product.id, {
+        quantity: newQty,
         stockStatus: newStatus,
         available: isAvail
       });
-      notify(`"${product.name}" marked as ${newStatus}`);
+      notify(`"${product.name}" marked as ${newStatus} (${newQty} units)`);
       loadDashboardData();
     } catch (err) {
       alert('Error updating stock status');
+    }
+  };
+
+  const handleQuickAddQty = async (product, amountToAdd) => {
+    const current = product.quantity !== undefined ? parseInt(product.quantity, 10) : 0;
+    const newQty = Math.max(0, current + amountToAdd);
+    const isOut = newQty === 0;
+    try {
+      await updateProduct(product._id || product.id, {
+        quantity: newQty,
+        stockStatus: isOut ? 'Out of Stock' : 'In Stock',
+        available: !isOut
+      });
+      notify(isOut ? `"${product.name}" marked Out of Stock (0 units)` : `Restocked "${product.name}" (+${amountToAdd} units, now ${newQty})!`);
+      loadDashboardData();
+    } catch (err) {
+      alert('Error updating quantity');
+    }
+  };
+
+  const handleSetProductQuantity = async (product, targetQty) => {
+    const newQty = Math.max(0, parseInt(targetQty, 10) || 0);
+    const isOut = newQty === 0;
+    try {
+      await updateProduct(product._id || product.id, {
+        quantity: newQty,
+        stockStatus: isOut ? 'Out of Stock' : 'In Stock',
+        available: !isOut
+      });
+      notify(isOut ? `"${product.name}" marked Out of Stock` : `Inventory for "${product.name}" updated to ${newQty} units!`);
+      loadDashboardData();
+    } catch (err) {
+      alert('Error updating stock quantity');
     }
   };
 
@@ -427,6 +472,7 @@ const Admin = () => {
       category: product.category,
       price: product.price || '',
       originalPrice: product.originalPrice || '',
+      quantity: product.quantity !== undefined ? product.quantity : (product.stockStatus === 'Out of Stock' ? 0 : 10),
       stockStatus: product.stockStatus || (product.available === false ? 'Out of Stock' : 'In Stock'),
       material: product.material || '',
       description: product.description || '',
@@ -447,13 +493,19 @@ const Admin = () => {
     }
 
     try {
+      const editQty = editForm.quantity !== undefined && editForm.quantity !== ''
+        ? Math.max(0, parseInt(editForm.quantity, 10) || 0)
+        : 0;
+      const isOut = editQty === 0 || editForm.stockStatus === 'Out of Stock';
+
       await updateProduct(editForm.id, {
         name: editForm.name,
         category: editForm.category,
         price: editForm.price,
         originalPrice: editForm.originalPrice,
-        stockStatus: editForm.stockStatus,
-        available: editForm.stockStatus !== 'Out of Stock',
+        quantity: editQty,
+        stockStatus: isOut ? 'Out of Stock' : (editForm.stockStatus || 'In Stock'),
+        available: !isOut,
         material: editForm.material,
         description: editForm.description,
         images: editForm.images,
@@ -463,7 +515,7 @@ const Admin = () => {
         newArrival: editForm.newArrival,
         featured: editForm.featured
       });
-      notify(`"${editForm.name}" updated successfully!`);
+      notify(`"${editForm.name}" updated with ${editQty} unit(s) in stock!`);
       setEditingProduct(null);
       setEditForm(null);
       loadDashboardData();
@@ -575,8 +627,16 @@ const Admin = () => {
     }
   };
 
+  // Inventory Stock Calculations
+  const outOfStockProducts = products.filter(p => p.quantity === 0 || p.stockStatus === 'Out of Stock' || p.available === false);
+  const inStockProducts = products.filter(p => (p.quantity === undefined || p.quantity > 0) && p.stockStatus !== 'Out of Stock' && p.available !== false);
+
   // Filtered Products
   const filteredProducts = products.filter(p => {
+    const isOut = p.quantity === 0 || p.stockStatus === 'Out of Stock' || p.available === false;
+    if (stockFilter === 'in-stock' && isOut) return false;
+    if (stockFilter === 'out-of-stock' && !isOut) return false;
+
     const matchesSearch = searchQuery === '' || 
       p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -802,6 +862,26 @@ const Admin = () => {
             <span>Manage Catalog ({products.length})</span>
           </button>
 
+          {/* Dedicated Out of Stock Tab */}
+          <button
+            onClick={() => setActiveTab('out-of-stock')}
+            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap relative ${
+              activeTab === 'out-of-stock'
+                ? 'bg-rose-700 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-rose-50 hover:text-rose-700'
+            }`}
+          >
+            <AlertTriangle className={`w-4 h-4 ${activeTab === 'out-of-stock' ? 'text-white' : 'text-rose-600'}`} />
+            <span>Out of Stock</span>
+            {outOfStockProducts.length > 0 && (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                activeTab === 'out-of-stock' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-800 border border-rose-300'
+              }`}>
+                {outOfStockProducts.length}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setActiveTab('add-product')}
             className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap ${
@@ -877,6 +957,7 @@ const Admin = () => {
             </div>
 
             {/* Filter and Search Bar with Optgroups */}
+            {/* Filter and Search Bar with Optgroups */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <div className="relative flex-grow">
                 <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
@@ -907,28 +988,71 @@ const Admin = () => {
               </div>
             </div>
 
+            {/* Quick Stock Filter Buttons */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-100">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">
+                Filter Stock:
+              </span>
+              <button
+                type="button"
+                onClick={() => setStockFilter('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  stockFilter === 'all'
+                    ? 'bg-boutique-berry text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                All Items ({products.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStockFilter('in-stock')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  stockFilter === 'in-stock'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                }`}
+              >
+                In Stock ({inStockProducts.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStockFilter('out-of-stock')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 ${
+                  stockFilter === 'out-of-stock'
+                    ? 'bg-rose-700 text-white shadow-sm'
+                    : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100'
+                }`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                <span>Out of Stock ({outOfStockProducts.length})</span>
+              </button>
+            </div>
+
             {filteredProducts.length === 0 ? (
               <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
                 <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <h3 className="font-serif text-lg font-bold text-gray-700">No products found</h3>
-                <p className="text-xs text-gray-500 mt-1">Try adjusting your category filter or search query.</p>
+                <p className="text-xs text-gray-500 mt-1">Try adjusting your category filter, stock status, or search query.</p>
                 <button
-                  onClick={() => setActiveTab('add-product')}
+                  onClick={() => { setSelectedCategoryFilter('all'); setStockFilter('all'); setSearchQuery(''); }}
                   className="mt-4 px-4 py-2 rounded-full bg-boutique-berry text-white text-xs font-semibold"
                 >
-                  + Upload Item
+                  Reset All Filters
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((p) => {
                   const id = p._id || p.id;
-                  const isOutOfStock = p.stockStatus === 'Out of Stock' || p.available === false;
+                  const isOutOfStock = p.quantity === 0 || p.stockStatus === 'Out of Stock' || p.available === false;
+                  const currentUnits = p.quantity !== undefined ? p.quantity : 10;
+
                   return (
                     <div 
                       key={id} 
                       className={`rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col justify-between ${
-                        isOutOfStock ? 'bg-gray-50 border-gray-200 opacity-80' : 'bg-white border-gray-200 hover:shadow-lg hover:border-boutique-blushMedium'
+                        isOutOfStock ? 'bg-gray-50 border-rose-200 opacity-90' : 'bg-white border-gray-200 hover:shadow-lg hover:border-boutique-blushMedium'
                       }`}
                     >
                       <div>
@@ -936,7 +1060,7 @@ const Admin = () => {
                           <img
                             src={p.images?.[0] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80'}
                             alt={p.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'grayscale-[20%]' : ''}`}
                           />
                           
                           <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
@@ -958,8 +1082,9 @@ const Admin = () => {
                                   ? 'bg-rose-600 text-white' 
                                   : 'bg-emerald-600 text-white'
                               }`}
+                              title="Click to toggle In Stock / Out of Stock"
                             >
-                              {p.stockStatus || (isOutOfStock ? 'Out of Stock' : 'In Stock')}
+                              {isOutOfStock ? 'Out of Stock' : `In Stock (${currentUnits})`}
                             </button>
                           </div>
                         </div>
@@ -987,6 +1112,48 @@ const Admin = () => {
                             <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
                               {p.material || 'Premium'}
                             </span>
+                          </div>
+
+                          {/* Inventory Status Bar with Quick Restock Stepper */}
+                          <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                            <div className="flex items-center space-x-1.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Stock:</span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                isOutOfStock 
+                                  ? 'bg-rose-100 text-rose-800 border border-rose-200' 
+                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              }`}>
+                                {isOutOfStock ? '0 (Out of Stock)' : `${currentUnits} Units`}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => handleQuickAddQty(p, -1)}
+                                disabled={currentUnits <= 0}
+                                className="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs flex items-center justify-center disabled:opacity-30 transition-all active:scale-95"
+                                title="Reduce stock by 1 unit"
+                              >
+                                -
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickAddQty(p, 1)}
+                                className="w-6 h-6 rounded bg-boutique-blush hover:bg-boutique-blushMedium text-boutique-berry font-bold text-xs flex items-center justify-center transition-all active:scale-95"
+                                title="Add 1 unit"
+                              >
+                                +
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickAddQty(p, 5)}
+                                className="px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] border border-emerald-200 transition-all active:scale-95"
+                                title="Restock +5 units"
+                              >
+                                +5
+                              </button>
+                            </div>
                           </div>
 
                           {p.sizes && p.sizes.length > 0 && (
@@ -1046,6 +1213,148 @@ const Admin = () => {
                         </div>
                       </div>
 
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- DEDICATED OUT OF STOCK SECTION --- */}
+        {activeTab === 'out-of-stock' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-200 flex items-center">
+                    <AlertTriangle className="w-3 h-3 mr-1" />
+                    Automatic Sold-Out Inventory
+                  </span>
+                  <span className="text-xs text-gray-400">|</span>
+                  <span className="text-xs font-semibold text-rose-600">
+                    {outOfStockProducts.length} items currently out of stock
+                  </span>
+                </div>
+                <h2 className="font-serif text-2xl font-bold text-boutique-charcoal mt-2">
+                  Out of Stock Products
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Products automatically appear here when all material units are sold. Restock or edit their quantity below to immediately restore them to your showroom.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('products')}
+                  className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-colors"
+                >
+                  View All Products ({products.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('add-product')}
+                  className="px-4 py-2 rounded-xl bg-boutique-berry text-white hover:bg-boutique-deepRose text-xs font-bold transition-colors"
+                >
+                  + Upload New Product
+                </button>
+              </div>
+            </div>
+
+            {outOfStockProducts.length === 0 ? (
+              <div className="text-center py-16 bg-emerald-50/50 rounded-2xl border border-dashed border-emerald-200">
+                <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                <h3 className="font-serif text-lg font-bold text-emerald-900">
+                  All Boutique Items are in Stock!
+                </h3>
+                <p className="text-xs text-emerald-700 mt-1 max-w-md mx-auto">
+                  Zero items are currently sold out. When customer purchases drop any product's stock to 0 units, it will automatically appear here for restock.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {outOfStockProducts.map((p) => {
+                  const id = p._id || p.id;
+                  return (
+                    <div 
+                      key={id}
+                      className="rounded-2xl border border-rose-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="relative h-48 bg-gray-100 overflow-hidden">
+                          <img
+                            src={p.images?.[0] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80'}
+                            alt={p.name}
+                            className="w-full h-full object-cover grayscale-[30%]"
+                          />
+                          <div className="absolute top-2.5 left-2.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider bg-rose-600 text-white px-2.5 py-1 rounded-full shadow-sm">
+                              Out of Stock (0 Units)
+                            </span>
+                          </div>
+                          <div className="absolute bottom-2 left-2.5">
+                            <span className="text-[10px] font-semibold bg-white/90 backdrop-blur-sm text-boutique-charcoal px-2 py-0.5 rounded shadow-sm">
+                              {p.category}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="p-4 space-y-2">
+                          <h4 className="font-serif text-base font-bold text-boutique-charcoal line-clamp-1">
+                            {p.name}
+                          </h4>
+                          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                            {p.description}
+                          </p>
+                          <div className="flex items-center justify-between text-xs pt-1">
+                            <span className="font-bold text-boutique-berry">{p.price}</span>
+                            <span className="text-gray-400">{p.material || 'Standard Fabric'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Restock Action Section */}
+                      <div className="p-4 bg-rose-50/60 border-t border-rose-100 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-rose-900 uppercase tracking-wider">
+                            Restock Inventory:
+                          </span>
+                          <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            1-Click Restock
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {[1, 5, 10, 20].map((qtyToAdd) => (
+                            <button
+                              key={qtyToAdd}
+                              type="button"
+                              onClick={() => handleQuickAddQty(p, qtyToAdd)}
+                              className="py-1.5 px-2 rounded-lg bg-white border border-rose-200 text-rose-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 text-xs font-bold transition-all shadow-sm active:scale-95 text-center"
+                            >
+                              +{qtyToAdd} Qty
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1 border-t border-rose-100">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(p)}
+                            className="flex-1 py-1.5 px-3 rounded-lg bg-boutique-berry hover:bg-boutique-plum text-white text-xs font-semibold flex items-center justify-center gap-1 shadow-sm transition-all"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit Full Details / Custom Qty</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProduct(id, p.name)}
+                            className="p-1.5 rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-100"
+                            title="Delete item"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
@@ -1174,8 +1483,8 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Price & MRP */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              {/* Price, Quantity & MRP */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                   <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1">
                     Display Price *
@@ -1205,11 +1514,43 @@ const Admin = () => {
 
                 <div>
                   <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1">
+                    Stock Quantity (Units) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    placeholder="e.g. 5 or 10"
+                    value={newProduct.quantity !== undefined ? newProduct.quantity : 1}
+                    onChange={(e) => {
+                      const q = Math.max(0, parseInt(e.target.value, 10) || 0);
+                      setNewProduct({
+                        ...newProduct,
+                        quantity: q,
+                        stockStatus: q === 0 ? 'Out of Stock' : (newProduct.stockStatus === 'Out of Stock' ? 'In Stock' : newProduct.stockStatus)
+                      });
+                    }}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-boutique-rose"
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 block">
+                    {newProduct.quantity === 0 ? '⚠️ Automatically Out of Stock' : `${newProduct.quantity || 1} available unit(s)`}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1">
                     Stock Availability
                   </label>
                   <select
                     value={newProduct.stockStatus}
-                    onChange={(e) => setNewProduct({ ...newProduct, stockStatus: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setNewProduct({
+                        ...newProduct,
+                        stockStatus: val,
+                        quantity: val === 'Out of Stock' ? 0 : (newProduct.quantity || 1)
+                      });
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-boutique-rose bg-white"
                   >
                     <option value="In Stock">In Stock</option>
@@ -1880,7 +2221,7 @@ const Admin = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1">
                     Category *
@@ -1913,12 +2254,53 @@ const Admin = () => {
                 </div>
 
                 <div>
+                  <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1 flex items-center justify-between">
+                    <span>Qty (Units) *</span>
+                    {(editForm.quantity ?? 1) === 0 && (
+                      <span className="text-[9px] text-rose-500 font-bold uppercase">Sold Out</span>
+                    )}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={editForm.quantity ?? 0}
+                    onChange={(e) => {
+                      const val = Math.max(0, parseInt(e.target.value) || 0);
+                      setEditForm(prev => ({
+                        ...prev,
+                        quantity: val,
+                        stockStatus: val === 0 ? 'Out of Stock' : (prev.stockStatus === 'Out of Stock' ? 'In Stock' : prev.stockStatus),
+                        available: val > 0
+                      }));
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold focus:outline-none focus:border-boutique-rose"
+                  />
+                </div>
+
+                <div>
                   <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1">
                     Stock Status
                   </label>
                   <select
                     value={editForm.stockStatus}
-                    onChange={(e) => setEditForm({ ...editForm, stockStatus: e.target.value })}
+                    onChange={(e) => {
+                      const nextStatus = e.target.value;
+                      setEditForm(prev => {
+                        let nextQty = prev.quantity ?? 1;
+                        if (nextStatus === 'Out of Stock') {
+                          nextQty = 0;
+                        } else if (nextStatus === 'In Stock' && nextQty === 0) {
+                          nextQty = 1;
+                        }
+                        return {
+                          ...prev,
+                          stockStatus: nextStatus,
+                          quantity: nextQty,
+                          available: nextStatus !== 'Out of Stock' && nextQty > 0
+                        };
+                      });
+                    }}
                     className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-boutique-rose bg-white"
                   >
                     <option value="In Stock">In Stock</option>

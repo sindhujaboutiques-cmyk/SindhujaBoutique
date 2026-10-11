@@ -12,6 +12,8 @@ const productSchema = new mongoose.Schema({
   colors: [{ type: String }],
   material: { type: String, default: 'Premium Fabric' },
   customizable: { type: Boolean, default: true },
+  quantity: { type: Number, default: 1, min: 0 },
+  stockStatus: { type: String, default: 'In Stock' },
   available: { type: Boolean, default: true },
   featured: { type: Boolean, default: false },
   newArrival: { type: Boolean, default: false },
