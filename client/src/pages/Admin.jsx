@@ -281,12 +281,46 @@ const Admin = () => {
     setLoginPassword('sinduja@admin2025');
   };
 
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
+  const compressImageFile = (file, maxWidth = 1000, quality = 0.8) => {
+    return new Promise((resolve) => {
+      if (!file || !file.type?.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+        return;
+      }
+
       const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth || height > maxWidth) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxWidth) / height);
+              height = maxWidth;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressed);
+        };
+        img.onerror = () => resolve(event.target.result);
+        img.src = event.target.result;
+      };
+      reader.onerror = () => resolve('');
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
     });
   };
 
@@ -297,14 +331,16 @@ const Admin = () => {
     try {
       const uploadedUrls = [];
       for (let i = 0; i < files.length; i++) {
-        const base64 = await fileToBase64(files[i]);
-        uploadedUrls.push(base64);
+        const compressedBase64 = await compressImageFile(files[i]);
+        if (compressedBase64) {
+          uploadedUrls.push(compressedBase64);
+        }
       }
       setNewProduct(prev => ({
         ...prev,
         images: [...uploadedUrls, ...prev.images]
       }));
-      notify(`Added ${uploadedUrls.length} photo(s) to dress preview!`);
+      notify(`Optimized & added ${uploadedUrls.length} photo(s) to dress preview!`);
     } catch (err) {
       alert('Error reading uploaded image file. Please try another photo.');
     }
@@ -363,7 +399,20 @@ const Admin = () => {
         featured: newProduct.featured
       };
 
-      await createProduct(payload);
+      const result = await createProduct(payload);
+      const createdItem = result?.data || {
+        ...payload,
+        id: 'prod-' + Date.now(),
+        _id: 'prod-' + Date.now()
+      };
+
+      // Instantly inject into local state so product is immediately displayed!
+      setProducts(prev => {
+        const cId = createdItem._id || createdItem.id;
+        const exists = prev.some(p => (p._id && p._id === cId) || (p.id && p.id === cId));
+        return exists ? prev : [createdItem, ...prev];
+      });
+
       notify(`"${newProduct.name}" published with ${qty} unit(s) in inventory!`);
       
       setNewProduct({
@@ -530,8 +579,8 @@ const Admin = () => {
     try {
       const urls = [];
       for (let i = 0; i < files.length; i++) {
-        const b64 = await fileToBase64(files[i]);
-        urls.push(b64);
+        const b64 = await compressImageFile(files[i]);
+        if (b64) urls.push(b64);
       }
       setEditForm(prev => ({
         ...prev,

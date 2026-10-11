@@ -109,7 +109,19 @@ const getLocalProductOverrides = () => {
 const saveLocalCustomProducts = (items) => {
   try {
     localStorage.setItem('sinduja_custom_products', JSON.stringify(items));
-  } catch (e) {}
+  } catch (e) {
+    console.warn('LocalStorage quota warning in saveLocalCustomProducts:', e);
+    try {
+      // If quota exceeded, preserve data with first image thumbnail
+      const trimmed = items.map(p => ({
+        ...p,
+        images: Array.isArray(p.images) && p.images.length > 0 ? [p.images[0]] : p.images
+      }));
+      localStorage.setItem('sinduja_custom_products', JSON.stringify(trimmed));
+    } catch (e2) {
+      console.error('Failed to write to localStorage:', e2);
+    }
+  }
 };
 
 const saveLocalProductOverrides = (overrides) => {
@@ -132,15 +144,15 @@ export const getProducts = async (params = {}) => {
     console.warn('API fallback to local product data:', err.message);
   }
   
-  // Merge custom products if backend list is empty or fallback
+  // Merge custom products
+  const custom = getLocalCustomProducts();
   if (!list || list.length === 0) {
-    const custom = getLocalCustomProducts();
     list = [...custom, ...INITIAL_PRODUCTS];
   } else {
-    // If backend succeeded, still merge any local custom products
-    const custom = getLocalCustomProducts();
-    const existingIds = new Set(list.map(p => p._id || p.id));
-    const uniqueCustom = custom.filter(p => !existingIds.has(p._id || p.id));
+    // If backend succeeded, merge any local custom products at top
+    const existingIds = new Set(list.map(p => String(p._id || p.id)));
+    const existingSlugs = new Set(list.map(p => p.slug).filter(Boolean));
+    const uniqueCustom = custom.filter(p => !existingIds.has(String(p._id || p.id)) && !existingSlugs.has(p.slug));
     list = [...uniqueCustom, ...list];
   }
 
@@ -167,7 +179,21 @@ export const getProducts = async (params = {}) => {
   });
 
   if (params.category && params.category !== 'all') {
-    list = list.filter(p => p.categorySlug === params.category || p.category.toLowerCase() === params.category.toLowerCase());
+    const target = params.category.toLowerCase().replace(/[^a-z0-9]/g, '');
+    list = list.filter(p => {
+      const pCatSlug = (p.categorySlug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const pCat = (p.category || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return pCatSlug === target || pCat === target || pCat.includes(target) || target.includes(pCat);
+    });
+  }
+  if (params.search) {
+    const s = params.search.toLowerCase();
+    list = list.filter(p => 
+      (p.name && p.name.toLowerCase().includes(s)) ||
+      (p.category && p.category.toLowerCase().includes(s)) ||
+      (p.description && p.description.toLowerCase().includes(s)) ||
+      (p.material && p.material.toLowerCase().includes(s))
+    );
   }
   if (params.featured) {
     list = list.filter(p => p.featured);
@@ -225,6 +251,16 @@ export const createProduct = async (productData) => {
 
   try {
     const res = await api.post('/products', productData);
+    if (res.data?.success && res.data?.data) {
+      const serverItem = res.data.data;
+      const updatedCustom = getLocalCustomProducts().map(p => 
+        (p.id === itemToSave.id || p.slug === itemToSave.slug) 
+          ? { ...serverItem, id: serverItem._id || serverItem.id } 
+          : p
+      );
+      saveLocalCustomProducts(updatedCustom);
+      return { success: true, message: 'Item published successfully', data: serverItem };
+    }
     return res.data;
   } catch (err) {
     return { success: true, message: 'Item saved successfully to boutique inventory', data: itemToSave };
