@@ -1,13 +1,21 @@
 /**
- * Razorpay Integration Service for Sinduja Boutique
- * Ready to receive Live/Test Razorpay Key ID & Key Secret.
+ * Razorpay Standard Web Checkout Integration for Sinduja Boutique
+ * Supports Order Creation -> Modal Payment -> Signature Verification
  */
 
-// Dynamically load Razorpay SDK script if not already present
+import { createRazorpayOrder, verifyRazorpayPayment, getRazorpayPublicKey } from './api';
+
+// Dynamically ensure Razorpay SDK script is loaded
 export const loadRazorpayScript = () => {
   return new Promise((resolve) => {
-    if (window.Razorpay) {
+    if (typeof window !== 'undefined' && window.Razorpay) {
       resolve(true);
+      return;
+    }
+    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(true));
+      existing.addEventListener('error', () => resolve(false));
       return;
     }
     const script = document.createElement('script');
@@ -22,16 +30,19 @@ export const loadRazorpayScript = () => {
   });
 };
 
-// Check if Razorpay Key is configured
+// Retrieve public key from Vite env or backend
 export const getRazorpayKey = () => {
   return import.meta.env.VITE_RAZORPAY_KEY_ID || window.__RAZORPAY_KEY_ID__ || '';
 };
 
 /**
- * Initiates Razorpay Payment
- * @param {Object} orderData - { orderId, amount, customerName, customerEmail, customerPhone, notes }
- * @param {Function} onSuccess - Callback when payment succeeds
- * @param {Function} onFailure - Callback when payment fails or cancelled
+ * Initiates Razorpay Standard Payment:
+ * 1. Validates SDK & Key
+ * 2. Creates order on server (/api/create-order)
+ * 3. Opens Razorpay Modal with returned order_id
+ * 4. Verifies signature on server (/api/verify-payment)
+ *
+ * @param {Object} params - { orderId, amount, customerName, customerEmail, customerPhone, notes, onSuccess, onFailure }
  */
 export const initiateRazorpayPayment = async ({
   orderId,
@@ -39,57 +50,150 @@ export const initiateRazorpayPayment = async ({
   customerName,
   customerEmail,
   customerPhone,
+  notes = {},
   onSuccess,
   onFailure
 }) => {
-  const isLoaded = await loadRazorpayScript();
-  if (!isLoaded) {
-    onFailure?.(new Error('Razorpay SDK failed to load. Please check your internet connection.'));
-    return;
-  }
+  try {
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded || typeof window.Razorpay === 'undefined') {
+      onFailure?.(new Error('Razorpay SDK failed to load. Please check your internet connection.'));
+      return;
+    }
 
-  const razorpayKey = getRazorpayKey();
-
-  if (!razorpayKey) {
-    // If Razorpay Key is not yet provided by the boutique owner
-    onFailure?.({
-      code: 'KEY_NOT_CONFIGURED',
-      message: 'Razorpay Key has not been configured yet. Please choose Cash on Delivery or WhatsApp Confirmation.'
-    });
-    return;
-  }
-
-  const options = {
-    key: razorpayKey,
-    amount: Math.round(amount * 100), // Razorpay expects amount in paise (1 INR = 100 paise)
-    currency: 'INR',
-    name: 'Sinduja Boutique',
-    description: `Order #${orderId} - Designer Wear & Tailoring`,
-    image: '/assets/logo.png',
-    handler: function (response) {
-      // response = { razorpay_payment_id, razorpay_order_id, razorpay_signature }
-      onSuccess?.(response);
-    },
-    prefill: {
-      name: customerName,
-      email: customerEmail || '',
-      contact: customerPhone
-    },
-    theme: {
-      color: '#8A1538' // Boutique Signature Berry Color
-    },
-    modal: {
-      ondismiss: function () {
-        onFailure?.({ code: 'PAYMENT_CANCELLED', message: 'Payment modal closed by user.' });
+    let razorpayKey = getRazorpayKey();
+    if (!razorpayKey) {
+      // Fallback: try fetching from server endpoint
+      try {
+        razorpayKey = await getRazorpayPublicKey();
+      } catch (e) {
+        console.warn('Could not fetch Razorpay key from server');
       }
     }
-  };
 
-  try {
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+    if (!razorpayKey) {
+      onFailure?.({
+        code: 'KEY_NOT_CONFIGURED',
+        message: 'Razorpay Key has not been configured. Please verify your environment settings or choose Cash on Delivery.'
+      });
+      return;
+    }
+
+    // Minimum transaction check: 100 paise (₹1.00)
+    const amountInPaise = Math.round(Number(amount) * 100);
+    if (isNaN(amountInPaise) || amountInPaise < 100) {
+      onFailure?.({
+        code: 'INVALID_AMOUNT',
+        message: 'Minimum order amount for online payment is ₹1.00 (100 paise).'
+      });
+      return;
+    }
+
+    // 1. Create Order on Backend (POST /api/create-order)
+    let serverOrder;
+    try {
+      serverOrder = await createRazorpayOrder({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: orderId,
+        notes: {
+          customerName,
+          customerPhone,
+          orderId,
+          ...notes
+        }
+      });
+    } catch (createErr) {
+      console.error('Failed to create Razorpay order on server:', createErr);
+      onFailure?.({
+        code: 'ORDER_CREATION_FAILED',
+        message: createErr.message || 'Could not initiate payment order on server. Please try again.'
+      });
+      return;
+    }
+
+    const rzpOrderId = serverOrder?.order_id || serverOrder?.order?.id;
+    if (!rzpOrderId) {
+      onFailure?.({
+        code: 'INVALID_ORDER_RESPONSE',
+        message: 'Server did not return a valid Razorpay Order ID.'
+      });
+      return;
+    }
+
+    // 2. Configure Razorpay Standard Checkout Modal
+    const options = {
+      key: razorpayKey,
+      amount: serverOrder.amount || amountInPaise,
+      currency: serverOrder.currency || 'INR',
+      name: 'Sinduja Boutique',
+      description: `Order #${orderId} - Designer Wear & Tailoring`,
+      image: '/assets/logo.png',
+      order_id: rzpOrderId,
+      prefill: {
+        name: customerName,
+        email: customerEmail || '',
+        contact: customerPhone
+      },
+      theme: {
+        color: '#8A1538' // Sinduja Signature Berry
+      },
+      handler: async function (response) {
+        // response = { razorpay_payment_id, razorpay_order_id, razorpay_signature }
+        try {
+          // 3. Verify Payment Signature on Backend (POST /api/verify-payment)
+          const verifyResult = await verifyRazorpayPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          });
+
+          if (verifyResult && verifyResult.isPaid) {
+            onSuccess?.({
+              ...response,
+              verified: true,
+              receipt: serverOrder.receipt,
+              verification: verifyResult
+            });
+          } else {
+            onFailure?.({
+              code: 'SIGNATURE_MISMATCH',
+              message: verifyResult?.message || 'Payment signature verification failed. Order not marked as paid.'
+            });
+          }
+        } catch (verifyErr) {
+          console.error('Payment verification failed:', verifyErr);
+          onFailure?.({
+            code: 'VERIFY_FAILED',
+            message: verifyErr.message || 'Failed to verify payment with server. Please contact boutique support.'
+          });
+        }
+      },
+      modal: {
+        ondismiss: function () {
+          onFailure?.({
+            code: 'PAYMENT_CANCELLED',
+            message: 'Payment cancelled. The transaction was not completed.'
+          });
+        }
+      }
+    };
+
+    const rzpInstance = new window.Razorpay(options);
+
+    // Handle payment.failed event
+    rzpInstance.on('payment.failed', function (failedResponse) {
+      console.error('Razorpay payment failed:', failedResponse);
+      const errMsg = failedResponse.error?.description || failedResponse.error?.reason || 'Payment could not be processed.';
+      onFailure?.({
+        code: 'PAYMENT_FAILED',
+        message: `${errMsg} (Error: ${failedResponse.error?.code || 'DECLINED'})`
+      });
+    });
+
+    rzpInstance.open();
   } catch (err) {
-    console.error('Error opening Razorpay modal:', err);
+    console.error('Razorpay initialization exception:', err);
     onFailure?.(err);
   }
 };

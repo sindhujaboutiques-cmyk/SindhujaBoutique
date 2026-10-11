@@ -35,6 +35,9 @@ const Checkout = () => {
     );
   }
 
+  const hasCustomizableItems = cart.some((item) => item.customizable);
+  const razorpayKey = getRazorpayKey();
+
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -45,14 +48,11 @@ const Checkout = () => {
     state: 'Tamil Nadu',
     pincode: '',
     stitchingNotes: '',
-    paymentMethod: 'cod' // 'razorpay' | 'cod' | 'whatsapp'
+    paymentMethod: razorpayKey ? 'razorpay' : 'cod' // 'razorpay' | 'cod' | 'whatsapp'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-
-  const hasCustomizableItems = cart.some((item) => item.customizable);
-  const razorpayKey = getRazorpayKey();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -123,7 +123,10 @@ const Checkout = () => {
         customerPhone: formData.phone,
         onSuccess: async (response) => {
           orderData.paymentId = response.razorpay_payment_id;
+          orderData.razorpayOrderId = response.razorpay_order_id;
+          orderData.razorpaySignature = response.razorpay_signature;
           orderData.paymentStatus = 'Paid';
+          orderData.verified = true;
           localStorage.setItem(`sinduja_order_${generatedOrderId}`, JSON.stringify(orderData));
           try {
             await deductProductStock(cart);

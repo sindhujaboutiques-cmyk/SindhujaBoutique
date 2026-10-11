@@ -433,4 +433,43 @@ export const deleteEnquiry = async (id) => {
   }
 };
 
+/* ========================================================
+   RAZORPAY CHECKOUT APIS
+======================================================== */
+export const createRazorpayOrder = async ({ amount, currency = 'INR', receipt, notes }) => {
+  try {
+    const res = await api.post('/create-order', {
+      amount,
+      currency,
+      receipt,
+      notes
+    });
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || { message: 'Failed to initialize payment order on server' };
+  }
+};
+
+export const verifyRazorpayPayment = async ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) => {
+  try {
+    const res = await api.post('/verify-payment', {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
+    });
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || { message: 'Payment signature verification failed' };
+  }
+};
+
+export const getRazorpayPublicKey = async () => {
+  try {
+    const res = await api.get('/razorpay-key');
+    return res.data?.key_id || '';
+  } catch (err) {
+    return '';
+  }
+};
+
 export default api;

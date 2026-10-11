@@ -9,6 +9,12 @@ const { getOffers, createOffer } = require('../controllers/offerController');
 const { getSettings, updateSettings } = require('../controllers/settingsController');
 const { submitEnquiry, getEnquiries, updateEnquiryStatus, deleteEnquiry } = require('../controllers/contactController');
 const { adminLogin, verifyAdminSession, updateAdminPassword } = require('../controllers/authController');
+const { createOrder, verifyPayment, getPublicKey } = require('../controllers/paymentController');
+
+// Razorpay Payment Routes
+router.post('/create-order', createOrder);
+router.post('/verify-payment', verifyPayment);
+router.get('/razorpay-key', getPublicKey);
 
 // Admin Authentication Routes
 router.post('/admin/login', adminLogin);
