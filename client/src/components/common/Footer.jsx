@@ -158,8 +158,12 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-boutique-charcoalLight/50 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-3 text-center sm:text-left">
           <p>© {BUSINESS_CONFIG.year} {BUSINESS_CONFIG.name}. All Rights Reserved.</p>
-          <div className="flex flex-wrap items-center justify-center sm:justify-end">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3">
             <span>Designed for {BUSINESS_CONFIG.owner}'s Fashion Atelier</span>
+            <span>•</span>
+            <Link to="/admin" className="text-gray-400 hover:text-boutique-pink transition-colors underline">
+              Owner Portal
+            </Link>
           </div>
         </div>
       </div>

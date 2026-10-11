@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Phone, Clock, Menu, X, ChevronRight, Search } from 'lucide-react';
+import { Phone, Clock, Menu, X, ChevronRight, Search, Lock } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 import waLogo from '../../assets/whatsapp-logo.png';
 import igLogo from '../../assets/insta-logo.png';
@@ -88,6 +88,14 @@ const Navbar = () => {
               <img src={igLogo} alt="Instagram" className="w-4 h-4 mr-1 rounded-sm" />
               <span className="hidden md:inline">{BUSINESS_CONFIG.instagramHandle}</span>
             </a>
+            <Link 
+              to="/admin" 
+              className="flex items-center text-boutique-pink hover:text-white transition-colors text-[11px] font-semibold px-2 py-0.5 rounded bg-boutique-charcoalLight hover:bg-boutique-berry/60 ml-2"
+              title="Sinduja Boutique Owner Login Portal"
+            >
+              <Lock className="w-3 h-3 mr-1 text-boutique-pink" />
+              <span>Owner Portal</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -257,8 +265,12 @@ const Navbar = () => {
                 Call {BUSINESS_CONFIG.phoneDisplay}
               </a>
 
-              <div className="pt-2 text-center text-[11px] text-gray-500">
+              <div className="pt-2 flex items-center justify-between text-[11px] text-gray-500">
                 <p>{BUSINESS_CONFIG.openingHours}</p>
+                <Link to="/admin" onClick={() => setIsOpen(false)} className="text-boutique-berry font-semibold flex items-center hover:underline">
+                  <Lock className="w-3 h-3 mr-1" />
+                  Owner Portal
+                </Link>
               </div>
             </div>
           </div>
