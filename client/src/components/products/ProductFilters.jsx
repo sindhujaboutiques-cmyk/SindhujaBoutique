@@ -43,13 +43,13 @@ const ProductFilters = ({
       </div>
 
       {/* Category Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 sm:mx-0 sm:px-0">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-2 px-2 sm:mx-0 sm:px-0">
         <button
           onClick={() => onSelectCategory('all')}
-          className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider whitespace-nowrap transition-all ${
+          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wider whitespace-nowrap active:scale-95 transition-all border ${
             selectedCategory === 'all'
-              ? 'bg-boutique-berry text-white shadow-sm'
-              : 'bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium'
+              ? 'bg-boutique-berry text-white border-boutique-berry shadow-sm'
+              : 'bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium border-boutique-blushMedium'
           }`}
         >
           All Items
@@ -59,10 +59,10 @@ const ProductFilters = ({
           <button
             key={cat.id || cat.slug}
             onClick={() => onSelectCategory(cat.slug)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider whitespace-nowrap transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wider whitespace-nowrap active:scale-95 transition-all border ${
               selectedCategory === cat.slug
-                ? 'bg-boutique-berry text-white shadow-sm'
-                : 'bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium'
+                ? 'bg-boutique-berry text-white border-boutique-berry shadow-sm'
+                : 'bg-boutique-blush text-boutique-charcoal hover:bg-boutique-blushMedium border-boutique-blushMedium'
             }`}
           >
             {cat.name}

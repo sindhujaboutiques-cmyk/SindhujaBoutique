@@ -4,6 +4,7 @@ import { MessageCircle, Phone, Sparkles, ArrowRight, Heart } from 'lucide-react'
 import SEO from '../components/common/SEO';
 import Hero from '../components/home/Hero';
 import AboutPreview from '../components/home/AboutPreview';
+import QuickCategoryRail from '../components/home/QuickCategoryRail';
 import FeaturedCollections from '../components/home/FeaturedCollections';
 import NewArrivalsSection from '../components/home/NewArrivalsSection';
 import ServicesSpotlight from '../components/home/ServicesSpotlight';
@@ -21,14 +22,17 @@ const Home = () => {
       {/* Hero Section */}
       <Hero />
 
-      {/* About Preview */}
-      <AboutPreview />
+      {/* Amazon & Flipkart Style Quick Category Discovery Rail */}
+      <QuickCategoryRail />
+
+      {/* Fresh New Arrivals Rail */}
+      <NewArrivalsSection />
 
       {/* Featured Collections Showcase */}
       <FeaturedCollections />
 
-      {/* Fresh New Arrivals */}
-      <NewArrivalsSection />
+      {/* About Preview */}
+      <AboutPreview />
 
       {/* Atelier Services Spotlight */}
       <ServicesSpotlight />

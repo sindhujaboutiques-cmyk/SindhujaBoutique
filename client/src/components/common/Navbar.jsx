@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Phone, Clock, Menu, X, ChevronRight } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Phone, Clock, Menu, X, ChevronRight, Search } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 import waLogo from '../../assets/whatsapp-logo.png';
 import igLogo from '../../assets/insta-logo.png';
@@ -9,7 +9,9 @@ import { BUSINESS_CONFIG } from '../../config/businessConfig';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileSearch, setMobileSearch] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -156,6 +158,40 @@ const Navbar = () => {
               {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
+        </div>
+
+        {/* Amazon & Flipkart Style Mobile Search Input Bar */}
+        <div className="px-4 pb-2.5 pt-1 lg:hidden">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (mobileSearch.trim()) {
+                navigate(`/products?search=${encodeURIComponent(mobileSearch.trim())}`);
+              } else {
+                navigate('/products');
+              }
+            }}
+            className="relative flex items-center w-full"
+          >
+            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search sarees, blouses, chudidar, jewels..."
+              value={mobileSearch}
+              onChange={(e) => setMobileSearch(e.target.value)}
+              className="w-full pl-10 pr-9 py-2 rounded-full text-xs bg-boutique-blush/60 border border-boutique-blushMedium focus:outline-none focus:border-boutique-rose focus:ring-2 focus:ring-boutique-pink/20 transition-all placeholder:text-gray-400 shadow-inner"
+            />
+            {mobileSearch ? (
+              <button
+                type="button"
+                onClick={() => setMobileSearch('')}
+                className="absolute right-3 text-gray-400 hover:text-gray-600 p-0.5"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : null}
+          </form>
         </div>
       </header>
 

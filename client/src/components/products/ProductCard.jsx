@@ -23,7 +23,7 @@ const ProductCard = ({ product }) => {
   const whatsappUrl = BUSINESS_CONFIG.getWhatsAppUrl('product', name);
 
   return (
-    <div className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-boutique-blushMedium shadow-sm hover:shadow-luxury transition-all duration-500 hover:-translate-y-1">
+    <div className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-boutique-blushMedium shadow-sm hover:shadow-luxury transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
       {/* Image Container */}
       <div className="relative aspect-[3/4] overflow-hidden bg-boutique-blush">
         <Link to={`/products/${slug}`} className="block w-full h-full">
@@ -36,7 +36,7 @@ const ProductCard = ({ product }) => {
         </Link>
 
         {/* Top Badges */}
-        <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1 z-10">
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1 z-10">
           {newArrival && (
             <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-boutique-berry text-white shadow-sm">
               New Arrival
@@ -52,7 +52,7 @@ const ProductCard = ({ product }) => {
 
         {/* Development Notice */}
         {isSampleData && (
-          <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-10">
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10">
             <SampleNoticeBadge text="Sample Item" />
           </div>
         )}
@@ -78,7 +78,7 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Card Content */}
-      <div className="p-3 sm:p-5 flex flex-col flex-grow justify-between bg-white">
+      <div className="p-2.5 sm:p-5 flex flex-col flex-grow justify-between bg-white">
         <div>
           <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-boutique-rose block mb-0.5 sm:mb-1">
             {category}
@@ -90,10 +90,10 @@ const ProductCard = ({ product }) => {
           </Link>
         </div>
 
-        <div className="pt-2.5 sm:pt-3 mt-2 sm:mt-3 border-t border-boutique-blushMedium flex flex-col min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between gap-1.5 sm:gap-2">
+        <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-boutique-blushMedium flex flex-col min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between gap-1.5 sm:gap-2">
           <div>
-            <span className="text-[10px] sm:text-xs text-gray-500 font-light block">Pricing:</span>
-            <span className="text-xs sm:text-sm font-semibold text-boutique-charcoal tracking-wide">
+            <span className="text-[9px] sm:text-xs text-gray-500 font-light block leading-none">Pricing:</span>
+            <span className="text-xs sm:text-sm font-semibold text-boutique-charcoal tracking-tight">
               {price}
             </span>
           </div>
@@ -102,7 +102,7 @@ const ProductCard = ({ product }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center py-1 px-2.5 rounded-full bg-boutique-blush hover:bg-emerald-50 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-700 border border-emerald-200/60 transition-colors"
+            className="inline-flex items-center justify-center min-h-[32px] px-2.5 sm:px-3 rounded-full bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-800 border border-emerald-300/80 transition-all shadow-sm"
           >
             <MessageCircle className="w-3 h-3 mr-1 text-emerald-600 flex-shrink-0" />
             <span>Enquire</span>
