@@ -2,6 +2,30 @@ const mongoose = require('mongoose');
 
 let isConnected = false;
 
+const seedInitialDataIfNeeded = async () => {
+  try {
+    const Category = require('../models/Category');
+    const Product = require('../models/Product');
+    const { categories, products } = require('../data/seedData');
+
+    const catCount = await Category.countDocuments();
+    if (catCount === 0) {
+      console.log('[Seed] Seeding initial 40 boutique categories into MongoDB...');
+      await Category.insertMany(categories);
+      console.log('[Seed] Categories seeded successfully.');
+    }
+
+    const prodCount = await Product.countDocuments();
+    if (prodCount === 0) {
+      console.log('[Seed] Seeding initial boutique products into MongoDB...');
+      await Product.insertMany(products);
+      console.log('[Seed] Products seeded successfully.');
+    }
+  } catch (err) {
+    console.log('[Seed] Note during auto-seed:', err.message);
+  }
+};
+
 const connectDB = async () => {
   if (mongoose.connection.readyState >= 1) {
     isConnected = true;
@@ -16,6 +40,10 @@ const connectDB = async () => {
     });
     isConnected = true;
     console.log(`[MongoDB] Connected successfully: ${conn.connection.host}`);
+    
+    // Auto-seed initial catalog if empty
+    seedInitialDataIfNeeded();
+
     return true;
   } catch (error) {
     isConnected = false;
@@ -27,4 +55,5 @@ const connectDB = async () => {
 const getIsConnected = () => isConnected || mongoose.connection.readyState === 1;
 
 module.exports = { connectDB, getIsConnected };
+
 
