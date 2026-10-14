@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 
+const ATLAS_DEFAULT_URI = 'mongodb+srv://sindhujaboutiques_db_user:sinduja123@sindhujaboutique.11hwf2x.mongodb.net/sinduja_boutique?retryWrites=true&w=majority&appName=SindhujaBoutique';
+
 let isConnected = false;
+let connectionPromise = null;
+let hasSeeded = false;
 
 const seedInitialDataIfNeeded = async () => {
+  if (hasSeeded) return;
+  hasSeeded = true;
   try {
     const Category = require('../models/Category');
     const Product = require('../models/Product');
@@ -27,33 +33,39 @@ const seedInitialDataIfNeeded = async () => {
 };
 
 const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) {
+  if (mongoose.connection.readyState === 1) {
     isConnected = true;
-    return true;
+    return mongoose.connection;
   }
 
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/sinduja_boutique';
-  
-  try {
-    const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000
-    });
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  const uri = process.env.MONGODB_URI || ATLAS_DEFAULT_URI;
+
+  connectionPromise = mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 10000,
+    maxPoolSize: 10,
+  }).then(async (conn) => {
     isConnected = true;
-    console.log(`[MongoDB] Connected successfully: ${conn.connection.host}`);
+    console.log(`[MongoDB] Connected successfully to database: ${conn.connection.name} (${conn.connection.host})`);
     
     // Auto-seed initial catalog if empty
-    seedInitialDataIfNeeded();
+    await seedInitialDataIfNeeded();
 
-    return true;
-  } catch (error) {
+    return conn;
+  }).catch((error) => {
     isConnected = false;
-    console.log(`[MongoDB] Notice: MongoDB connection failed (${error.message}). Running with high-performance in-memory seed store.`);
-    return false;
-  }
+    connectionPromise = null; // Allow retry on subsequent request
+    console.error(`[MongoDB] Connection failed (${error.message}).`);
+    throw error;
+  });
+
+  return connectionPromise;
 };
 
 const getIsConnected = () => isConnected || mongoose.connection.readyState === 1;
 
 module.exports = { connectDB, getIsConnected };
-
-

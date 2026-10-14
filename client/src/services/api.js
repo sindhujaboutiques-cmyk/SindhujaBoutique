@@ -192,50 +192,18 @@ const saveLocalProductOverrides = (overrides) => {
    PRODUCTS / DRESSES APIS
 ======================================================== */
 export const getProducts = async (params = {}) => {
-  let list = [];
   try {
     const res = await api.get('/products', { params });
     if (res.data?.success && Array.isArray(res.data?.data)) {
-      list = res.data.data;
+      return res.data.data;
     }
   } catch (err) {
-    console.warn('API fallback to local product data:', err.message);
+    console.warn('API fetch products error, using offline store:', err.message);
   }
   
-  // Merge custom products
+  // Offline fallback
   const custom = getLocalCustomProducts();
-  if (!list || list.length === 0) {
-    list = [...custom, ...INITIAL_PRODUCTS];
-  } else {
-    // If backend succeeded, merge any local custom products at top
-    const existingIds = new Set(list.map(p => String(p._id || p.id)));
-    const existingSlugs = new Set(list.map(p => p.slug).filter(Boolean));
-    const uniqueCustom = custom.filter(p => !existingIds.has(String(p._id || p.id)) && !existingSlugs.has(p.slug));
-    list = [...uniqueCustom, ...list];
-  }
-
-  // Apply overrides (quantity edits, restocks, out-of-stock marks)
-  const overrides = getLocalProductOverrides();
-  list = list.map(prod => {
-    const id = prod._id || prod.id;
-    const slug = prod.slug;
-    const match = overrides[id] || (slug ? overrides[slug] : null);
-    const merged = match ? { ...prod, ...match } : prod;
-    
-    // Parse quantity
-    const qty = merged.quantity !== undefined && merged.quantity !== null 
-      ? parseInt(merged.quantity, 10) 
-      : (merged.stockStatus === 'Out of Stock' ? 0 : 10);
-    const isOut = qty <= 0 || merged.stockStatus === 'Out of Stock' || merged.available === false;
-    
-    return {
-      ...merged,
-      quantity: isOut ? 0 : qty,
-      stockStatus: isOut ? 'Out of Stock' : (merged.stockStatus || 'In Stock'),
-      available: !isOut
-    };
-  });
-
+  let list = [...custom, ...INITIAL_PRODUCTS];
   if (params.category && params.category !== 'all') {
     const target = params.category.toLowerCase().replace(/[^a-z0-9]/g, '');
     list = list.filter(p => {
@@ -266,16 +234,13 @@ export const getProductBySlug = async (slug) => {
   try {
     const res = await api.get(`/products/${slug}`);
     if (res.data?.success && res.data?.data) {
-      const overrides = getLocalProductOverrides();
       const prod = res.data.data;
-      const match = overrides[prod._id || prod.id] || overrides[prod.slug];
-      const merged = match ? { ...prod, ...match } : prod;
-      const qty = merged.quantity !== undefined ? parseInt(merged.quantity, 10) : 10;
-      const isOut = qty <= 0 || merged.stockStatus === 'Out of Stock' || merged.available === false;
+      const qty = prod.quantity !== undefined ? parseInt(prod.quantity, 10) : 10;
+      const isOut = qty <= 0 || prod.stockStatus === 'Out of Stock' || prod.available === false;
       return {
-        ...merged,
+        ...prod,
         quantity: isOut ? 0 : qty,
-        stockStatus: isOut ? 'Out of Stock' : (merged.stockStatus || 'In Stock'),
+        stockStatus: isOut ? 'Out of Stock' : (prod.stockStatus || 'In Stock'),
         available: !isOut
       };
     }
@@ -294,12 +259,6 @@ export const getProductBySlug = async (slug) => {
       const sharedProd = decodeSharedProductPayload(sp);
       if (sharedProd) {
         if (!sharedProd.slug) sharedProd.slug = slug;
-        // Cache to local products so it persists for this customer's visit
-        const custom = getLocalCustomProducts();
-        if (!custom.some(c => c.slug === slug || c.id === sharedProd.id)) {
-          custom.unshift(sharedProd);
-          saveLocalCustomProducts(custom);
-        }
         return sharedProd;
       }
     }
@@ -314,44 +273,28 @@ export const createProduct = async (productData) => {
     : 1;
   const isOut = parsedQty === 0 || productData.stockStatus === 'Out of Stock' || productData.available === false;
   
-  const itemToSave = {
+  const payload = {
     ...productData,
-    id: 'prod-' + Date.now(),
-    _id: 'prod-' + Date.now(),
-    slug: (productData.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4),
-    categorySlug: (productData.category || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
     quantity: parsedQty,
     stockStatus: isOut ? 'Out of Stock' : (productData.stockStatus || 'In Stock'),
     available: !isOut
   };
 
-  const custom = getLocalCustomProducts();
-  custom.unshift(itemToSave);
-  saveLocalCustomProducts(custom);
-
-  try {
-    const res = await api.post('/products', {
-      ...productData,
-      slug: itemToSave.slug
-    });
-    if (res.data?.success && res.data?.data) {
-      const serverItem = res.data.data;
-      const updatedCustom = getLocalCustomProducts().map(p => 
-        (p.id === itemToSave.id || p.slug === itemToSave.slug) 
-          ? { ...serverItem, id: serverItem._id || serverItem.id } 
-          : p
-      );
-      saveLocalCustomProducts(updatedCustom);
-      return { success: true, message: 'Item published successfully', data: serverItem };
-    }
+  const res = await api.post('/products', payload);
+  if (res.data?.success && res.data?.data) {
+    const serverItem = res.data.data;
+    // Keep local cache in sync with newly created DB item
+    const custom = getLocalCustomProducts();
+    const filtered = custom.filter(p => p._id !== serverItem._id && p.id !== serverItem._id && p.slug !== serverItem.slug);
+    filtered.unshift(serverItem);
+    saveLocalCustomProducts(filtered);
     return res.data;
-  } catch (err) {
-    return { success: true, message: 'Item saved successfully to boutique inventory', data: itemToSave };
   }
+  
+  throw new Error(res.data?.message || 'Database error: Failed to save product to catalog');
 };
 
 export const updateProduct = async (id, productData) => {
-  const overrides = getLocalProductOverrides();
   const q = productData.quantity !== undefined && productData.quantity !== null 
     ? Math.max(0, parseInt(productData.quantity, 10) || 0) 
     : undefined;
@@ -363,38 +306,31 @@ export const updateProduct = async (id, productData) => {
     ...(isOut ? { stockStatus: 'Out of Stock', available: false } : (q !== undefined && q > 0 ? { stockStatus: 'In Stock', available: true } : {}))
   };
 
-  overrides[id] = { ...(overrides[id] || {}), ...updatedData };
-  saveLocalProductOverrides(overrides);
-
-  const custom = getLocalCustomProducts();
-  const customIdx = custom.findIndex(p => p.id === id || p._id === id);
-  if (customIdx > -1) {
-    custom[customIdx] = { ...custom[customIdx], ...updatedData };
-    saveLocalCustomProducts(custom);
-  }
-
-  try {
-    const res = await api.put(`/products/${id}`, updatedData);
+  const res = await api.put(`/products/${id}`, updatedData);
+  if (res.data?.success) {
+    const updated = res.data.data || { ...updatedData, id, _id: id };
+    const custom = getLocalCustomProducts();
+    const customIdx = custom.findIndex(p => p.id === id || p._id === id || p.slug === id);
+    if (customIdx > -1) {
+      custom[customIdx] = { ...custom[customIdx], ...updated };
+      saveLocalCustomProducts(custom);
+    }
     return res.data;
-  } catch (err) {
-    return { success: true, message: 'Stock and details updated successfully', data: updatedData };
   }
+  throw new Error(res.data?.message || 'Database error: Failed to update product in catalog');
 };
 
 export const deleteProduct = async (id) => {
-  const custom = getLocalCustomProducts().filter(p => p.id !== id && p._id !== id);
-  saveLocalCustomProducts(custom);
-
-  const overrides = getLocalProductOverrides();
-  delete overrides[id];
-  saveLocalProductOverrides(overrides);
-
-  try {
-    const res = await api.delete(`/products/${id}`);
+  const res = await api.delete(`/products/${id}`);
+  if (res.data?.success) {
+    const custom = getLocalCustomProducts().filter(p => p.id !== id && p._id !== id && p.slug !== id);
+    saveLocalCustomProducts(custom);
+    const overrides = getLocalProductOverrides();
+    delete overrides[id];
+    saveLocalProductOverrides(overrides);
     return res.data;
-  } catch (err) {
-    return { success: true, message: 'Product removed from showroom' };
   }
+  throw new Error(res.data?.message || 'Database error: Failed to delete product from catalog');
 };
 
 /**

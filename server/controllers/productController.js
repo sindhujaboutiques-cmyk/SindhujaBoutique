@@ -1,88 +1,79 @@
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
-const { getIsConnected } = require('../config/db');
-let { products: inMemoryProducts } = require('../data/seedData');
+const { connectDB, getIsConnected } = require('../config/db');
+
+// Helper to safely build query for MongoDB ObjectId or Slug
+const buildIdOrSlugFilter = (idOrSlug) => {
+  if (!idOrSlug) return null;
+  const isObjectId = mongoose.Types.ObjectId.isValid(idOrSlug) && String(new mongoose.Types.ObjectId(idOrSlug)) === String(idOrSlug);
+  if (isObjectId) {
+    return { $or: [{ _id: new mongoose.Types.ObjectId(idOrSlug) }, { slug: String(idOrSlug) }] };
+  }
+  return { slug: String(idOrSlug) };
+};
 
 // GET all products with optional query filtering
 const getProducts = async (req, res) => {
   try {
+    await connectDB();
     const { category, featured, newArrival, search } = req.query;
 
-    if (getIsConnected()) {
-      let query = {};
-      if (category && category !== 'all') {
-        query.categorySlug = category;
-      }
-      if (featured === 'true') {
-        query.featured = true;
-      }
-      if (newArrival === 'true') {
-        query.newArrival = true;
-      }
-      if (search) {
-        query.$or = [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { category: { $regex: search, $options: 'i' } }
-        ];
-      }
-      const products = await Product.find(query).sort({ createdAt: -1 });
-      return res.json({ success: true, count: products.length, data: products });
-    }
-
-    // In-memory fallback
-    let filtered = [...inMemoryProducts];
+    let query = {};
     if (category && category !== 'all') {
-      filtered = filtered.filter(p => p.categorySlug === category || p.category.toLowerCase() === category.toLowerCase());
+      // Support matching by either categorySlug or category display name
+      query.$or = [
+        { categorySlug: category },
+        { category: category }
+      ];
     }
     if (featured === 'true') {
-      filtered = filtered.filter(p => p.featured);
+      query.featured = true;
     }
     if (newArrival === 'true') {
-      filtered = filtered.filter(p => p.newArrival);
+      query.newArrival = true;
     }
     if (search) {
-      const s = search.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(s) || 
-        p.description.toLowerCase().includes(s) ||
-        p.category.toLowerCase().includes(s)
-      );
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+        { material: { $regex: search, $options: 'i' } }
+      ];
     }
 
-    return res.json({ success: true, count: filtered.length, data: filtered });
+    const products = await Product.find(query).sort({ createdAt: -1 });
+    return res.json({ success: true, count: products.length, data: products });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    return res.status(500).json({ success: false, message: 'Server error while fetching products', error: error.message });
+    console.error('Error fetching products from database:', error);
+    return res.status(500).json({ success: false, message: 'Database error fetching products', error: error.message });
   }
 };
 
 // GET single product by slug or id
 const getProductBySlug = async (req, res) => {
   try {
+    await connectDB();
     const { slug } = req.params;
-
-    if (getIsConnected()) {
-      const product = await Product.findOne({ $or: [{ slug }, { _id: slug.match(/^[0-9a-fA-F]{24}$/) ? slug : null }] });
-      if (!product) {
-        return res.status(404).json({ success: false, message: 'Product not found' });
-      }
-      return res.json({ success: true, data: product });
+    const filter = buildIdOrSlugFilter(slug);
+    if (!filter) {
+      return res.status(400).json({ success: false, message: 'Invalid product identifier' });
     }
 
-    // In-memory fallback
-    const product = inMemoryProducts.find(p => p.slug === slug || p.id === slug);
+    const product = await Product.findOne(filter);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res.status(404).json({ success: false, message: 'Product not found in boutique inventory' });
     }
     return res.json({ success: true, data: product });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Error retrieving product', error: error.message });
+    console.error('Error retrieving product:', error);
+    return res.status(500).json({ success: false, message: 'Database error retrieving product', error: error.message });
   }
 };
 
 // CREATE new product (Admin)
 const createProduct = async (req, res) => {
   try {
+    await connectDB();
     const { 
       name, 
       category, 
@@ -106,7 +97,17 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, Category, and Description are required' });
     }
 
-    const slug = req.body.slug || (name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4));
+    let finalSlug = (req.body.slug || (name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''))).trim();
+    if (!finalSlug) {
+      finalSlug = 'dress-' + Date.now();
+    }
+
+    // Ensure slug uniqueness in MongoDB
+    const existing = await Product.findOne({ slug: finalSlug });
+    if (existing) {
+      finalSlug = `${finalSlug}-${Date.now().toString().slice(-4)}`;
+    }
+
     const categorySlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const parsedQty = quantity !== undefined && quantity !== null ? Math.max(0, parseInt(quantity, 10) || 0) : 1;
@@ -116,15 +117,15 @@ const createProduct = async (req, res) => {
 
     const newProductData = {
       name,
-      slug,
+      slug: finalSlug,
       category,
       categorySlug,
       description,
       price: price || 'Price on Enquiry',
       originalPrice: originalPrice || '',
       images: images && images.length ? images : ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'],
-      sizes: sizes || ['Free Size'],
-      colors: colors || ['As Shown'],
+      sizes: sizes && sizes.length ? sizes : ['Free Size'],
+      colors: colors && colors.length ? colors : ['As Shown'],
       material: material || 'Premium Fabric',
       customizable: customizable !== undefined ? customizable : true,
       quantity: parsedQty,
@@ -133,27 +134,29 @@ const createProduct = async (req, res) => {
       featured: !!featured,
       newArrival: !!newArrival,
       tags: tags || [category],
-      isSampleData: false,
-      createdAt: new Date().toISOString()
+      isSampleData: false
     };
 
-    if (getIsConnected()) {
-      const product = await Product.create(newProductData);
-      return res.status(201).json({ success: true, message: 'Product created successfully', data: product });
-    }
-
-    // In-memory
-    const newProduct = { id: 'prod-' + Date.now(), _id: 'prod-' + Date.now(), ...newProductData };
-    inMemoryProducts.unshift(newProduct);
-    return res.status(201).json({ success: true, message: 'Product created successfully in memory store', data: newProduct });
+    const product = await Product.create(newProductData);
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Product created and stored successfully in database', 
+      data: product 
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Error creating product', error: error.message });
+    console.error('Error creating product in database:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Database error saving product: ' + error.message, 
+      error: error.message 
+    });
   }
 };
 
 // UPDATE product
 const updateProduct = async (req, res) => {
   try {
+    await connectDB();
     const { id } = req.params;
     const updates = { ...req.body };
 
@@ -168,54 +171,57 @@ const updateProduct = async (req, res) => {
         updates.stockStatus = 'Out of Stock';
         updates.available = false;
       } else if (q > 0 && updates.stockStatus === 'Out of Stock' && !req.body.stockStatus) {
-        // If restocked and stockStatus wasn't intentionally forced to Out of Stock
         updates.stockStatus = 'In Stock';
         updates.available = true;
       }
     }
 
-    if (getIsConnected()) {
-      const product = await Product.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
-      if (!product) {
-        return res.status(404).json({ success: false, message: 'Product not found' });
-      }
-      return res.json({ success: true, message: 'Product updated successfully', data: product });
+    const filter = buildIdOrSlugFilter(id);
+    if (!filter) {
+      return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
 
-    // In-memory
-    const index = inMemoryProducts.findIndex(p => p.id === id || p._id === id || p.slug === id);
-    if (index === -1) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+    const product = await Product.findOneAndUpdate(filter, updates, { new: true, runValidators: true });
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found in database to update' });
     }
-    inMemoryProducts[index] = { ...inMemoryProducts[index], ...updates };
-    return res.json({ success: true, message: 'Product updated in memory store', data: inMemoryProducts[index] });
+    return res.json({ 
+      success: true, 
+      message: 'Product updated successfully in database', 
+      data: product 
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Error updating product', error: error.message });
+    console.error('Error updating product in database:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Database error updating product: ' + error.message, 
+      error: error.message 
+    });
   }
 };
 
 // DELETE product
 const deleteProduct = async (req, res) => {
   try {
+    await connectDB();
     const { id } = req.params;
-
-    if (getIsConnected()) {
-      const product = await Product.findByIdAndDelete(id);
-      if (!product) {
-        return res.status(404).json({ success: false, message: 'Product not found' });
-      }
-      return res.json({ success: true, message: 'Product deleted successfully' });
+    const filter = buildIdOrSlugFilter(id);
+    if (!filter) {
+      return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
 
-    // In-memory
-    const initialLen = inMemoryProducts.length;
-    inMemoryProducts = inMemoryProducts.filter(p => p.id !== id && p.slug !== id);
-    if (inMemoryProducts.length === initialLen) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+    const product = await Product.findOneAndDelete(filter);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found in database to delete' });
     }
-    return res.json({ success: true, message: 'Product deleted successfully' });
+    return res.json({ success: true, message: 'Product deleted successfully from database' });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Error deleting product', error: error.message });
+    console.error('Error deleting product from database:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Database error deleting product: ' + error.message, 
+      error: error.message 
+    });
   }
 };
 

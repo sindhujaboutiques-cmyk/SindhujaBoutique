@@ -1,42 +1,36 @@
 const BusinessSettings = require('../models/BusinessSettings');
 const defaultSettings = require('../config/businessConfig');
-const { getIsConnected } = require('../config/db');
-
-let inMemorySettings = { ...defaultSettings };
+const { connectDB } = require('../config/db');
 
 const getSettings = async (req, res) => {
   try {
-    if (getIsConnected()) {
-      let settings = await BusinessSettings.findOne();
-      if (!settings) {
-        settings = await BusinessSettings.create(defaultSettings);
-      }
-      return res.json({ success: true, data: settings });
+    await connectDB();
+    let settings = await BusinessSettings.findOne();
+    if (!settings) {
+      settings = await BusinessSettings.create(defaultSettings);
     }
-    return res.json({ success: true, data: inMemorySettings });
+    return res.json({ success: true, data: settings });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Error retrieving settings', error: error.message });
+    console.error('Error retrieving settings from database:', error);
+    return res.json({ success: true, data: defaultSettings });
   }
 };
 
 const updateSettings = async (req, res) => {
   try {
+    await connectDB();
     const updates = req.body;
-    if (getIsConnected()) {
-      let settings = await BusinessSettings.findOne();
-      if (!settings) {
-        settings = await BusinessSettings.create({ ...defaultSettings, ...updates });
-      } else {
-        Object.assign(settings, updates);
-        await settings.save();
-      }
-      return res.json({ success: true, message: 'Settings updated successfully', data: settings });
+    let settings = await BusinessSettings.findOne();
+    if (!settings) {
+      settings = await BusinessSettings.create({ ...defaultSettings, ...updates });
+    } else {
+      Object.assign(settings, updates);
+      await settings.save();
     }
-
-    inMemorySettings = { ...inMemorySettings, ...updates };
-    return res.json({ success: true, message: 'Settings updated in memory store', data: inMemorySettings });
+    return res.json({ success: true, message: 'Settings updated successfully in database', data: settings });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Error updating settings', error: error.message });
+    console.error('Error updating settings in database:', error);
+    return res.status(500).json({ success: false, message: 'Error updating settings in database', error: error.message });
   }
 };
 

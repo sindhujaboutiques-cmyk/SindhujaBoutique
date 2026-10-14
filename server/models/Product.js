@@ -7,6 +7,7 @@ const productSchema = new mongoose.Schema({
   categorySlug: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: String, default: 'Price on Enquiry' },
+  originalPrice: { type: String, default: '' },
   images: [{ type: String }],
   sizes: [{ type: String }],
   colors: [{ type: String }],
@@ -18,7 +19,7 @@ const productSchema = new mongoose.Schema({
   featured: { type: Boolean, default: false },
   newArrival: { type: Boolean, default: false },
   tags: [{ type: String }],
-  isSampleData: { type: Boolean, default: true }
+  isSampleData: { type: Boolean, default: false }
 }, {
   timestamps: true
 });

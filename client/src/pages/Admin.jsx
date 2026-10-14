@@ -341,7 +341,7 @@ const Admin = () => {
     setLoginPassword('sinduja@admin2025');
   };
 
-  const compressImageFile = (file, maxWidth = 1000, quality = 0.8) => {
+  const compressImageFile = (file, maxWidth = 900, quality = 0.72) => {
     return new Promise((resolve) => {
       if (!file || !file.type?.startsWith('image/')) {
         const reader = new FileReader();

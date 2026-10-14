@@ -1,5 +1,5 @@
 const ContactEnquiry = require('../models/ContactEnquiry');
-const { getIsConnected } = require('../config/db');
+const { connectDB, getIsConnected } = require('../config/db');
 
 let inMemoryEnquiries = [
   {
@@ -28,6 +28,7 @@ let inMemoryEnquiries = [
 
 const submitEnquiry = async (req, res) => {
   try {
+    await connectDB();
     const { name, phone, email, serviceInterest, message } = req.body;
 
     if (!name || !phone || !message) {
@@ -58,6 +59,7 @@ const submitEnquiry = async (req, res) => {
 
 const getEnquiries = async (req, res) => {
   try {
+    await connectDB();
     if (getIsConnected()) {
       const enquiries = await ContactEnquiry.find().sort({ createdAt: -1 });
       return res.json({ success: true, count: enquiries.length, data: enquiries });
@@ -70,6 +72,7 @@ const getEnquiries = async (req, res) => {
 
 const updateEnquiryStatus = async (req, res) => {
   try {
+    await connectDB();
     const { id } = req.params;
     const { status } = req.body;
 
@@ -90,6 +93,7 @@ const updateEnquiryStatus = async (req, res) => {
 
 const deleteEnquiry = async (req, res) => {
   try {
+    await connectDB();
     const { id } = req.params;
 
     if (getIsConnected()) {

@@ -1,9 +1,10 @@
 const Gallery = require('../models/Gallery');
-const { getIsConnected } = require('../config/db');
+const { connectDB, getIsConnected } = require('../config/db');
 let { galleryItems: inMemoryGallery } = require('../data/seedData');
 
 const getGalleryItems = async (req, res) => {
   try {
+    await connectDB();
     const { category } = req.query;
 
     if (getIsConnected()) {
@@ -27,6 +28,7 @@ const getGalleryItems = async (req, res) => {
 
 const createGalleryItem = async (req, res) => {
   try {
+    await connectDB();
     const { title, image, category, caption } = req.body;
     if (!title || !image || !category) {
       return res.status(400).json({ success: false, message: 'Title, image and category are required' });
@@ -49,6 +51,7 @@ const createGalleryItem = async (req, res) => {
 
 const deleteGalleryItem = async (req, res) => {
   try {
+    await connectDB();
     const { id } = req.params;
     if (getIsConnected()) {
       await Gallery.findByIdAndDelete(id);
