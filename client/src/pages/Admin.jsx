@@ -173,9 +173,69 @@ const Admin = () => {
   });
 
   const [newImageInputUrl, setNewImageInputUrl] = useState('');
+  const [manualColorInput, setManualColorInput] = useState('');
+  const [manualSizeInput, setManualSizeInput] = useState('');
+  const [editManualColorInput, setEditManualColorInput] = useState('');
+  const [editManualSizeInput, setEditManualSizeInput] = useState('');
   const fileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
   const galleryFileInputRef = useRef(null);
+
+  const handleAddCustomColor = () => {
+    if (!manualColorInput || !manualColorInput.trim()) return;
+    const parts = manualColorInput.split(',').map(s => s.trim()).filter(Boolean);
+    const existing = newProduct.colors || [];
+    const updated = [...existing];
+    parts.forEach(part => {
+      if (!updated.some(c => c.toLowerCase() === part.toLowerCase())) {
+        updated.push(part);
+      }
+    });
+    setNewProduct(prev => ({ ...prev, colors: updated }));
+    setManualColorInput('');
+  };
+
+  const handleAddCustomSize = () => {
+    if (!manualSizeInput || !manualSizeInput.trim()) return;
+    const parts = manualSizeInput.split(',').map(s => s.trim()).filter(Boolean);
+    const existing = newProduct.sizes || [];
+    const updated = [...existing];
+    parts.forEach(part => {
+      if (!updated.some(s => s.toLowerCase() === part.toLowerCase())) {
+        updated.push(part);
+      }
+    });
+    setNewProduct(prev => ({ ...prev, sizes: updated }));
+    setManualSizeInput('');
+  };
+
+  const handleAddEditCustomColor = () => {
+    if (!editManualColorInput || !editManualColorInput.trim() || !editForm) return;
+    const parts = editManualColorInput.split(',').map(s => s.trim()).filter(Boolean);
+    const existing = editForm.colors || [];
+    const updated = [...existing];
+    parts.forEach(part => {
+      if (!updated.some(c => c.toLowerCase() === part.toLowerCase())) {
+        updated.push(part);
+      }
+    });
+    setEditForm(prev => ({ ...prev, colors: updated }));
+    setEditManualColorInput('');
+  };
+
+  const handleAddEditCustomSize = () => {
+    if (!editManualSizeInput || !editManualSizeInput.trim() || !editForm) return;
+    const parts = editManualSizeInput.split(',').map(s => s.trim()).filter(Boolean);
+    const existing = editForm.sizes || [];
+    const updated = [...existing];
+    parts.forEach(part => {
+      if (!updated.some(s => s.toLowerCase() === part.toLowerCase())) {
+        updated.push(part);
+      }
+    });
+    setEditForm(prev => ({ ...prev, sizes: updated }));
+    setEditManualSizeInput('');
+  };
 
   // New Gallery Item State
   const [newGallery, setNewGallery] = useState({
@@ -1636,35 +1696,87 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Sizes */}
-              <div>
-                <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1">
-                  Sizes Available
-                </label>
-                <div className="flex flex-wrap gap-2 pt-1">
+              {/* Sizes Available */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-boutique-charcoal uppercase block">
+                    Available Sizes ({newProduct.sizes?.length || 0}) *
+                  </label>
+                  <span className="text-[11px] text-gray-500 font-light">Type custom size or pick presets below</span>
+                </div>
+
+                {/* Active Sizes as Badges with Remove (X) */}
+                <div className="flex flex-wrap gap-1.5 p-2.5 bg-gray-50 rounded-xl border border-gray-200 min-h-[44px] items-center">
+                  {newProduct.sizes && newProduct.sizes.length > 0 ? (
+                    newProduct.sizes.map((sz, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-boutique-berry text-white shadow-xs"
+                      >
+                        <span>{sz}</span>
+                        <button
+                          type="button"
+                          onClick={() => setNewProduct(prev => ({
+                            ...prev,
+                            sizes: prev.sizes.filter((_, i) => i !== idx)
+                          }))}
+                          className="hover:text-red-200 hover:bg-white/10 rounded-full p-0.5 transition-colors"
+                          title={`Remove ${sz}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-rose-500 italic">No sizes added yet. Type a size below or click presets.</span>
+                  )}
+                </div>
+
+                {/* Manual Size Input Bar */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Type size manually (e.g., Free Size, 38, 40, XL, XXL, Custom Tailored)..."
+                    value={manualSizeInput}
+                    onChange={(e) => setManualSizeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomSize();
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-boutique-rose"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomSize}
+                    className="px-4 py-2 rounded-xl bg-boutique-berry hover:bg-boutique-deepRose text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Size</span>
+                  </button>
+                </div>
+
+                {/* Size Presets */}
+                <div className="flex flex-wrap gap-1 items-center pt-0.5">
+                  <span className="text-[10px] text-gray-500 font-medium mr-1">Quick size presets:</span>
                   {SIZE_PRESETS.map((sz) => {
-                    const isSelected = newProduct.sizes.includes(sz);
+                    const isSelected = (newProduct.sizes || []).includes(sz);
                     return (
                       <button
                         key={sz}
                         type="button"
                         onClick={() => {
                           if (isSelected) {
-                            setNewProduct({
-                              ...newProduct,
-                              sizes: newProduct.sizes.filter(s => s !== sz)
-                            });
+                            setNewProduct(prev => ({ ...prev, sizes: prev.sizes.filter(s => s !== sz) }));
                           } else {
-                            setNewProduct({
-                              ...newProduct,
-                              sizes: [...newProduct.sizes, sz]
-                            });
+                            setNewProduct(prev => ({ ...prev, sizes: [...(prev.sizes || []), sz] }));
                           }
                         }}
-                        className={`text-xs px-3 py-1.5 rounded-xl font-medium transition-all ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-all ${
                           isSelected
-                            ? 'bg-boutique-berry text-white shadow-sm font-semibold'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-boutique-berry text-white border-boutique-berry font-semibold'
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                         }`}
                       >
                         {sz} {isSelected && '✓'}
@@ -1674,34 +1786,86 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Colors */}
-              <div>
-                <label className="text-xs font-bold text-boutique-charcoal uppercase block mb-1">
-                  Available Colors
-                </label>
-                <div className="flex flex-wrap gap-1.5 pt-1">
+              {/* Colors Available (Manual Entry & Presets) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-boutique-charcoal uppercase block">
+                    Available Colors ({newProduct.colors?.length || 0}) *
+                  </label>
+                  <span className="text-[11px] text-gray-500 font-light">Type custom color or pick presets below</span>
+                </div>
+
+                {/* Active Colors as Badges with Remove (X) */}
+                <div className="flex flex-wrap gap-1.5 p-2.5 bg-gray-50 rounded-xl border border-gray-200 min-h-[44px] items-center">
+                  {newProduct.colors && newProduct.colors.length > 0 ? (
+                    newProduct.colors.map((col, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-boutique-rose/20 text-boutique-berry border border-boutique-berry/30 shadow-xs"
+                      >
+                        <span>{col}</span>
+                        <button
+                          type="button"
+                          onClick={() => setNewProduct(prev => ({
+                            ...prev,
+                            colors: prev.colors.filter((_, i) => i !== idx)
+                          }))}
+                          className="hover:text-red-600 hover:bg-white/40 rounded-full p-0.5 transition-colors"
+                          title={`Remove ${col}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-rose-500 italic">No colors added yet. Type a color below or click presets.</span>
+                  )}
+                </div>
+
+                {/* Manual Color Input Bar */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Type color manually (e.g., Maroon, Wine Red, Royal Navy, Mustard Gold)..."
+                    value={manualColorInput}
+                    onChange={(e) => setManualColorInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomColor();
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-boutique-rose"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomColor}
+                    className="px-4 py-2 rounded-xl bg-boutique-berry hover:bg-boutique-deepRose text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Color</span>
+                  </button>
+                </div>
+
+                {/* Color Presets */}
+                <div className="flex flex-wrap gap-1 items-center pt-0.5">
+                  <span className="text-[10px] text-gray-500 font-medium mr-1">Quick color presets:</span>
                   {COLOR_PRESETS.map((col) => {
-                    const isSelected = newProduct.colors.includes(col);
+                    const isSelected = (newProduct.colors || []).includes(col);
                     return (
                       <button
                         key={col}
                         type="button"
                         onClick={() => {
                           if (isSelected) {
-                            setNewProduct({
-                              ...newProduct,
-                              colors: newProduct.colors.filter(c => c !== col)
-                            });
+                            setNewProduct(prev => ({ ...prev, colors: prev.colors.filter(c => c !== col) }));
                           } else {
-                            setNewProduct({
-                              ...newProduct,
-                              colors: [...newProduct.colors, col]
-                            });
+                            setNewProduct(prev => ({ ...prev, colors: [...(prev.colors || []), col] }));
                           }
                         }}
-                        className={`text-[11px] px-2.5 py-1 rounded-full border transition-all ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-all ${
                           isSelected
-                            ? 'bg-boutique-rose/20 border-boutique-berry text-boutique-berry font-bold'
+                            ? 'bg-boutique-berry text-white border-boutique-berry font-semibold'
                             : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                         }`}
                       >
@@ -2370,6 +2534,180 @@ const Admin = () => {
                   onChange={(e) => setEditForm({ ...editForm, material: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-boutique-rose"
                 />
+              </div>
+
+              {/* Sizes Available (Edit Modal) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-boutique-charcoal uppercase block">
+                    Sizes Available ({editForm.sizes?.length || 0})
+                  </label>
+                  <span className="text-[10px] text-gray-500 font-light">Type custom size or click presets</span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 p-2 bg-gray-50 rounded-xl border border-gray-200 min-h-[40px] items-center">
+                  {editForm.sizes && editForm.sizes.length > 0 ? (
+                    editForm.sizes.map((sz, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-boutique-berry text-white shadow-xs"
+                      >
+                        <span>{sz}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditForm(prev => ({
+                            ...prev,
+                            sizes: prev.sizes.filter((_, i) => i !== idx)
+                          }))}
+                          className="hover:text-red-200 hover:bg-white/10 rounded-full p-0.5 transition-colors"
+                          title={`Remove ${sz}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-rose-500 italic">No sizes added yet.</span>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Type size (e.g., Free Size, 38, 40, XL, XXL)..."
+                    value={editManualSizeInput}
+                    onChange={(e) => setEditManualSizeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddEditCustomSize();
+                      }
+                    }}
+                    className="flex-1 px-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-boutique-rose"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddEditCustomSize}
+                    className="px-3 py-1.5 rounded-xl bg-boutique-berry hover:bg-boutique-deepRose text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Add Size</span>
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-1 items-center">
+                  <span className="text-[10px] text-gray-500 font-medium mr-1">Quick presets:</span>
+                  {SIZE_PRESETS.map((sz) => {
+                    const isSelected = (editForm.sizes || []).includes(sz);
+                    return (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setEditForm(prev => ({ ...prev, sizes: prev.sizes.filter(s => s !== sz) }));
+                          } else {
+                            setEditForm(prev => ({ ...prev, sizes: [...(prev.sizes || []), sz] }));
+                          }
+                        }}
+                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-all ${
+                          isSelected
+                            ? 'bg-boutique-berry text-white border-boutique-berry font-semibold'
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        {sz} {isSelected && '✓'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Colors Available (Edit Modal) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-boutique-charcoal uppercase block">
+                    Available Colors ({editForm.colors?.length || 0})
+                  </label>
+                  <span className="text-[10px] text-gray-500 font-light">Type custom color or click presets</span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 p-2 bg-gray-50 rounded-xl border border-gray-200 min-h-[40px] items-center">
+                  {editForm.colors && editForm.colors.length > 0 ? (
+                    editForm.colors.map((col, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-boutique-rose/20 text-boutique-berry border border-boutique-berry/30 shadow-xs"
+                      >
+                        <span>{col}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditForm(prev => ({
+                            ...prev,
+                            colors: prev.colors.filter((_, i) => i !== idx)
+                          }))}
+                          className="hover:text-red-600 hover:bg-white/40 rounded-full p-0.5 transition-colors"
+                          title={`Remove ${col}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-rose-500 italic">No colors added yet.</span>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Type color (e.g., Maroon, Peacock Blue, Bottle Green)..."
+                    value={editManualColorInput}
+                    onChange={(e) => setEditManualColorInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddEditCustomColor();
+                      }
+                    }}
+                    className="flex-1 px-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-boutique-rose"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddEditCustomColor}
+                    className="px-3 py-1.5 rounded-xl bg-boutique-berry hover:bg-boutique-deepRose text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Add Color</span>
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-1 items-center">
+                  <span className="text-[10px] text-gray-500 font-medium mr-1">Quick presets:</span>
+                  {COLOR_PRESETS.map((col) => {
+                    const isSelected = (editForm.colors || []).includes(col);
+                    return (
+                      <button
+                        key={col}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setEditForm(prev => ({ ...prev, colors: prev.colors.filter(c => c !== col) }));
+                          } else {
+                            setEditForm(prev => ({ ...prev, colors: [...(prev.colors || []), col] }));
+                          }
+                        }}
+                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-all ${
+                          isSelected
+                            ? 'bg-boutique-berry text-white border-boutique-berry font-semibold'
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        {col} {isSelected && '✓'}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div>

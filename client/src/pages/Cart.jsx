@@ -179,14 +179,29 @@ const Cart = () => {
                         </span>
                         <button
                           type="button"
+                          disabled={item.maxStock !== undefined && item.quantity >= item.maxStock}
                           onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
-                          className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
-                          title="Increase quantity"
+                          className={`px-2.5 py-1.5 transition-colors ${
+                            item.maxStock !== undefined && item.quantity >= item.maxStock
+                              ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                              : 'text-gray-500 hover:bg-gray-100 active:bg-gray-200'
+                          }`}
+                          title={
+                            item.maxStock !== undefined && item.quantity >= item.maxStock
+                              ? `Maximum available stock reached (${item.maxStock} units)`
+                              : "Increase quantity"
+                          }
                           aria-label="Increase quantity"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
+
+                      {item.maxStock !== undefined && item.quantity >= item.maxStock && (
+                        <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-medium hidden sm:inline-block">
+                          Max stock reached ({item.maxStock})
+                        </span>
+                      )}
 
                       {/* Subtotal */}
                       <div className="text-right min-w-[85px]">

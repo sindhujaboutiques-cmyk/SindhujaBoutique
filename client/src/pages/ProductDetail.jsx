@@ -5,14 +5,14 @@ import SEO from '../components/common/SEO';
 import ProductGallery from '../components/products/ProductGallery';
 import ProductCard from '../components/products/ProductCard';
 import SampleNoticeBadge from '../components/common/SampleNoticeBadge';
-import { getProductBySlug, getProducts } from '../services/api';
+import { getProductBySlug, getProducts, encodeSharedProductPayload } from '../services/api';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
 import { useCart } from '../context/CartContext';
 
 const ProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { addToCart, cartCount, openCart } = useCart();
+  const { cart, addToCart, cartCount, openCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -49,16 +49,32 @@ const ProductDetail = () => {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: product?.name,
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
+  const handleShare = async () => {
+    try {
+      let shareUrl = `${window.location.origin}/products/${product.slug || product.id || product._id}`;
+      const sp = encodeSharedProductPayload(product);
+      if (sp) {
+        shareUrl += `?sp=${sp}`;
+      }
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: `${product?.name || 'Sinduja Boutique'}`,
+            text: `Check out ${product?.name} at Sinduja Boutique!`,
+            url: shareUrl,
+          });
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+        }
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+    } catch (err) {
+      console.error('Error sharing product:', err);
     }
   };
 
@@ -87,15 +103,42 @@ const ProductDetail = () => {
     );
   }
 
-  const isOutOfStock = product?.quantity === 0 || product?.stockStatus === 'Out of Stock' || product?.available === false;
+  const availableStock = typeof product?.quantity === 'number'
+    ? Math.max(0, product.quantity)
+    : (product?.stockStatus === 'Out of Stock' || product?.available === false ? 0 : 10);
+  const isOutOfStock = availableStock === 0 || product?.stockStatus === 'Out of Stock' || product?.available === false;
+
+  const handleIncreaseQuantity = () => {
+    if (quantity < availableStock) {
+      setQuantity((q) => q + 1);
+    }
+  };
+
+  const handleDecreaseQuantity = () => {
+    setQuantity((q) => Math.max(1, q - 1));
+  };
 
   const handleAddToCart = () => {
     if (!product || isOutOfStock) return;
+    const sizeToUse = selectedSize || product.sizes?.[0] || 'Free Size';
+    const colorToUse = selectedColor || product.colors?.[0] || 'As Shown';
+
+    // Check quantity currently already in cart
+    const existingInCart = (cart || []).find(
+      (item) => (item.id === (product.id || product._id)) && item.size === sizeToUse && item.color === colorToUse
+    );
+    const existingQty = existingInCart ? existingInCart.quantity : 0;
+    if (existingQty + quantity > availableStock) {
+      alert(`Cannot add ${quantity} more to your bag. You already have ${existingQty} in your bag and only ${availableStock} unit(s) are available in stock.`);
+      return;
+    }
+
     addToCart(product, {
-      size: selectedSize,
-      color: selectedColor,
+      size: sizeToUse,
+      color: colorToUse,
       quantity,
-      customNotes
+      customNotes,
+      maxStock: availableStock
     });
     setAddedAnim(true);
     setTimeout(() => setAddedAnim(false), 2000);
@@ -103,11 +146,24 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (!product || isOutOfStock) return;
+    const sizeToUse = selectedSize || product.sizes?.[0] || 'Free Size';
+    const colorToUse = selectedColor || product.colors?.[0] || 'As Shown';
+
+    const existingInCart = (cart || []).find(
+      (item) => (item.id === (product.id || product._id)) && item.size === sizeToUse && item.color === colorToUse
+    );
+    const existingQty = existingInCart ? existingInCart.quantity : 0;
+    if (existingQty + quantity > availableStock) {
+      alert(`Cannot buy ${quantity} unit(s). You already have ${existingQty} in your bag and only ${availableStock} unit(s) are available in stock.`);
+      return;
+    }
+
     addToCart(product, {
-      size: selectedSize,
-      color: selectedColor,
+      size: sizeToUse,
+      color: colorToUse,
       quantity,
-      customNotes
+      customNotes,
+      maxStock: availableStock
     });
     navigate('/checkout');
   };
@@ -224,21 +280,25 @@ const ProductDetail = () => {
             {/* Sizes Selector */}
             {product.sizes && product.sizes.length > 0 && (
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
-                  Available Sizes / Fit Options:
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-boutique-charcoal block">
+                    Available Size <span className="text-boutique-berry font-bold">({selectedSize || product.sizes[0]})</span>:
+                  </label>
+                  <span className="text-[11px] text-gray-500 font-light">From owner's boutique catalog</span>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => (
                     <button
                       key={size}
+                      type="button"
                       onClick={() => setSelectedSize(size)}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wider transition-all border ${
-                        selectedSize === size
-                          ? 'bg-boutique-berry text-white border-boutique-berry shadow-sm'
+                        (selectedSize || product.sizes[0]) === size
+                          ? 'bg-boutique-berry text-white border-boutique-berry shadow-sm ring-2 ring-boutique-rose/20'
                           : 'bg-white text-boutique-charcoal border-boutique-blushMedium hover:bg-boutique-blush'
                       }`}
                     >
-                      {size}
+                      {size} {(selectedSize || product.sizes[0]) === size && '✓'}
                     </button>
                   ))}
                 </div>
@@ -248,52 +308,93 @@ const ProductDetail = () => {
             {/* Colors */}
             {product.colors && product.colors.length > 0 && (
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
-                  Color Palette Options:
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-boutique-charcoal block">
+                    Color Options <span className="text-boutique-berry font-bold">({selectedColor || product.colors[0]})</span>:
+                  </label>
+                  <span className="text-[11px] text-gray-500 font-light">From owner's provided shades</span>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {product.colors.map((color) => (
                     <button
                       key={color}
+                      type="button"
                       onClick={() => setSelectedColor(color)}
                       className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-                        selectedColor === color
-                          ? 'bg-boutique-blushMedium text-boutique-berry border-boutique-rose font-bold'
+                        (selectedColor || product.colors[0]) === color
+                          ? 'bg-boutique-berry text-white border-boutique-berry font-bold shadow-xs ring-2 ring-boutique-rose/20'
                           : 'bg-white text-gray-700 border-boutique-blushMedium hover:bg-boutique-blush'
                       }`}
                     >
-                      {color}
+                      {color} {(selectedColor || product.colors[0]) === color && '✓'}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Quantity Selector */}
-            <div className="flex items-center gap-4 py-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                Quantity:
-              </span>
-              <div className="flex items-center border border-boutique-blushMedium rounded-xl overflow-hidden bg-white shadow-sm">
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:bg-boutique-blush active:scale-95 transition-all"
-                  aria-label="Decrease quantity"
-                >
-                  <Minus className="w-3.5 h-3.5" />
-                </button>
-                <span className="w-10 text-center font-bold text-sm text-boutique-charcoal">
-                  {quantity}
+            {/* Quantity Selector with Upper Bound Limit */}
+            <div className="space-y-1.5 py-1">
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-boutique-charcoal">
+                  Quantity:
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:bg-boutique-blush active:scale-95 transition-all"
-                  aria-label="Increase quantity"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center border border-boutique-blushMedium rounded-xl overflow-hidden bg-white shadow-sm">
+                  <button
+                    type="button"
+                    disabled={quantity <= 1 || isOutOfStock}
+                    onClick={handleDecreaseQuantity}
+                    className={`w-9 h-9 flex items-center justify-center transition-all ${
+                      quantity <= 1 || isOutOfStock
+                        ? 'opacity-30 cursor-not-allowed bg-gray-50 text-gray-400'
+                        : 'text-gray-600 hover:bg-boutique-blush active:scale-95'
+                    }`}
+                    aria-label="Decrease quantity"
+                    title={quantity <= 1 ? "Minimum 1 item" : "Decrease quantity"}
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="w-10 text-center font-bold text-sm text-boutique-charcoal">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={quantity >= availableStock || isOutOfStock}
+                    onClick={handleIncreaseQuantity}
+                    className={`w-9 h-9 flex items-center justify-center transition-all ${
+                      quantity >= availableStock || isOutOfStock
+                        ? 'opacity-30 cursor-not-allowed bg-gray-50 text-gray-400'
+                        : 'text-gray-600 hover:bg-boutique-blush active:scale-95'
+                    }`}
+                    aria-label="Increase quantity"
+                    title={
+                      quantity >= availableStock
+                        ? `Maximum available stock reached (${availableStock} units)`
+                        : "Increase quantity"
+                    }
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Stock info badge */}
+                {isOutOfStock ? (
+                  <span className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full">
+                    Out of Stock
+                  </span>
+                ) : quantity >= availableStock ? (
+                  <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+                    Max Stock: {availableStock} unit{availableStock > 1 ? 's' : ''} only
+                  </span>
+                ) : availableStock <= 5 ? (
+                  <span className="text-xs font-semibold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">
+                    🔥 Only {availableStock} left in stock
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-500 font-medium">
+                    ({availableStock} units available)
+                  </span>
+                )}
               </div>
             </div>
 

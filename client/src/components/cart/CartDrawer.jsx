@@ -181,10 +181,19 @@ const CartDrawer = () => {
                         </span>
                         <button
                           type="button"
+                          disabled={item.maxStock !== undefined && item.quantity >= item.maxStock}
                           onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
-                          className="px-2 py-1 text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                          className={`px-2 py-1 transition-colors ${
+                            item.maxStock !== undefined && item.quantity >= item.maxStock
+                              ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                              : 'text-gray-500 hover:bg-gray-100 active:bg-gray-200'
+                          }`}
                           aria-label="Increase quantity"
-                          title="Increase quantity"
+                          title={
+                            item.maxStock !== undefined && item.quantity >= item.maxStock
+                              ? `Maximum available stock reached (${item.maxStock})`
+                              : "Increase quantity"
+                          }
                         >
                           <Plus className="w-3 h-3" />
                         </button>

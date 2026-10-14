@@ -11,8 +11,9 @@ const indexHtml = path.join(distDir, 'index.html');
 if (fs.existsSync(indexHtml)) {
   const content = fs.readFileSync(indexHtml, 'utf8');
 
-  // 1. Create 404.html (Vercel & Netlify static SPA fallback)
+  // 1. Create 404.html & 200.html (Vercel & Netlify static SPA fallback)
   fs.writeFileSync(path.join(distDir, '404.html'), content);
+  fs.writeFileSync(path.join(distDir, '200.html'), content);
 
   // 2. Create static HTML entry files for all application routes
   const routes = [

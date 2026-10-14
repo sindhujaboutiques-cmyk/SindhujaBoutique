@@ -86,9 +86,9 @@ export const updateAdminPassword = async (payload) => {
 };
 
 /* ========================================================
-   LOCAL STORAGE PRODUCT SYNC HELPERS
+   LOCAL STORAGE PRODUCT SYNC HELPERS & SHARE PAYLOAD
 ======================================================== */
-const getLocalCustomProducts = () => {
+export const getLocalCustomProducts = () => {
   try {
     const raw = localStorage.getItem('sinduja_custom_products');
     return raw ? JSON.parse(raw) : [];
@@ -97,7 +97,7 @@ const getLocalCustomProducts = () => {
   }
 };
 
-const getLocalProductOverrides = () => {
+export const getLocalProductOverrides = () => {
   try {
     const raw = localStorage.getItem('sinduja_product_overrides');
     return raw ? JSON.parse(raw) : {};
@@ -106,7 +106,7 @@ const getLocalProductOverrides = () => {
   }
 };
 
-const saveLocalCustomProducts = (items) => {
+export const saveLocalCustomProducts = (items) => {
   try {
     localStorage.setItem('sinduja_custom_products', JSON.stringify(items));
   } catch (e) {
@@ -121,6 +121,64 @@ const saveLocalCustomProducts = (items) => {
     } catch (e2) {
       console.error('Failed to write to localStorage:', e2);
     }
+  }
+};
+
+export const encodeSharedProductPayload = (product) => {
+  if (!product) return '';
+  try {
+    const payload = {
+      n: product.name,
+      sl: product.slug,
+      c: product.category,
+      cs: product.categorySlug,
+      p: product.price,
+      op: product.originalPrice || '',
+      d: product.description,
+      m: product.material,
+      img: product.images,
+      sz: product.sizes,
+      col: product.colors,
+      q: product.quantity !== undefined ? product.quantity : 1,
+      cz: product.customizable
+    };
+    return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(payload)))));
+  } catch (err) {
+    console.warn('Could not encode share payload:', err);
+    return '';
+  }
+};
+
+export const decodeSharedProductPayload = (spString) => {
+  if (!spString) return null;
+  try {
+    const raw = decodeURIComponent(spString);
+    const jsonStr = decodeURIComponent(escape(atob(raw)));
+    const d = JSON.parse(jsonStr);
+    return {
+      id: d.id || ('prod-shared-' + (d.sl || Date.now())),
+      _id: d._id || ('prod-shared-' + (d.sl || Date.now())),
+      name: d.n || 'Sinduja Boutique Piece',
+      slug: d.sl || '',
+      category: d.c || 'Sarees',
+      categorySlug: d.cs || 'sarees',
+      price: d.p || 'Price on Enquiry',
+      originalPrice: d.op || '',
+      description: d.d || '',
+      material: d.m || 'Premium Fabric',
+      images: d.img && d.img.length ? d.img : ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'],
+      sizes: d.sz && d.sz.length ? d.sz : ['Free Size'],
+      colors: d.col && d.col.length ? d.col : ['As Shown'],
+      quantity: d.q !== undefined ? d.q : 5,
+      stockStatus: d.q === 0 ? 'Out of Stock' : 'In Stock',
+      available: d.q !== 0,
+      customizable: d.cz !== undefined ? d.cz : true,
+      featured: false,
+      newArrival: true
+    };
+  } catch (err) {
+    console.warn('Could not decode share payload:', err);
+    return null;
   }
 };
 
@@ -225,7 +283,29 @@ export const getProductBySlug = async (slug) => {
     console.warn('API fallback for product detail:', err.message);
   }
   const all = await getProducts();
-  return all.find(p => p.slug === slug || p.id === slug || p._id === slug) || null;
+  const found = all.find(p => p.slug === slug || p.id === slug || p._id === slug);
+  if (found) return found;
+
+  // Fallback: Check if shared product payload is present in the current URL query parameters (?sp=...)
+  if (typeof window !== 'undefined' && window.location.search) {
+    const params = new URLSearchParams(window.location.search);
+    const sp = params.get('sp');
+    if (sp) {
+      const sharedProd = decodeSharedProductPayload(sp);
+      if (sharedProd) {
+        if (!sharedProd.slug) sharedProd.slug = slug;
+        // Cache to local products so it persists for this customer's visit
+        const custom = getLocalCustomProducts();
+        if (!custom.some(c => c.slug === slug || c.id === sharedProd.id)) {
+          custom.unshift(sharedProd);
+          saveLocalCustomProducts(custom);
+        }
+        return sharedProd;
+      }
+    }
+  }
+
+  return null;
 };
 
 export const createProduct = async (productData) => {
@@ -250,7 +330,10 @@ export const createProduct = async (productData) => {
   saveLocalCustomProducts(custom);
 
   try {
-    const res = await api.post('/products', productData);
+    const res = await api.post('/products', {
+      ...productData,
+      slug: itemToSave.slug
+    });
     if (res.data?.success && res.data?.data) {
       const serverItem = res.data.data;
       const updatedCustom = getLocalCustomProducts().map(p => 

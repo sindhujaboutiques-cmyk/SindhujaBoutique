@@ -51,14 +51,19 @@ export const CartProvider = ({ children }) => {
 
     const numericPrice = parsePrice(product.price);
     const cartId = `${product.id || product._id || product.slug}_${size}_${color}`;
+    const maxStock = options.maxStock !== undefined 
+      ? options.maxStock 
+      : (product.quantity !== undefined ? Math.max(0, product.quantity) : 10);
 
     setCart((prevCart) => {
       const existingIdx = prevCart.findIndex((item) => item.cartId === cartId);
       if (existingIdx > -1) {
         const updated = [...prevCart];
+        const newTotalQty = Math.min(maxStock, updated[existingIdx].quantity + quantity);
         updated[existingIdx] = {
           ...updated[existingIdx],
-          quantity: updated[existingIdx].quantity + quantity,
+          quantity: newTotalQty,
+          maxStock: maxStock,
           customNotes: customNotes || updated[existingIdx].customNotes
         };
         return updated;
@@ -75,7 +80,8 @@ export const CartProvider = ({ children }) => {
         numericPrice: numericPrice,
         size,
         color,
-        quantity,
+        quantity: Math.min(maxStock, quantity),
+        maxStock: maxStock,
         customizable: product.customizable,
         customNotes
       };
@@ -92,7 +98,13 @@ export const CartProvider = ({ children }) => {
       return;
     }
     setCart((prev) =>
-      prev.map((item) => (item.cartId === cartId ? { ...item, quantity: newQty } : item))
+      prev.map((item) => {
+        if (item.cartId === cartId) {
+          const max = item.maxStock !== undefined ? item.maxStock : 999;
+          return { ...item, quantity: Math.min(max, newQty) };
+        }
+        return item;
+      })
     );
   };
 

@@ -24,6 +24,20 @@
       }
     },
     {
+      "source": "/assets/(.*)",
+      "destination": {
+        "service": "client",
+        "path": "/assets/$1"
+      }
+    },
+    {
+      "source": "/((?!api|health|assets|[^/]+\\.[a-zA-Z0-9]+$).*)",
+      "destination": {
+        "service": "client",
+        "path": "/index.html"
+      }
+    },
+    {
       "source": "/(.*)",
       "destination": {
         "service": "client"

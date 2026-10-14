@@ -106,7 +106,7 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, Category, and Description are required' });
     }
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4);
+    const slug = req.body.slug || (name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4));
     const categorySlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const parsedQty = quantity !== undefined && quantity !== null ? Math.max(0, parseInt(quantity, 10) || 0) : 1;
